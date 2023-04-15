@@ -28,4 +28,4 @@ jobs:
     - name: Run linter
       run: python -m flake8 .
     - name: Run tests
-      run: python -m pytest
+      run: python -m pytest --cov=drs_filer tests/
