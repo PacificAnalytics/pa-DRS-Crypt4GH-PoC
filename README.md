@@ -14,8 +14,54 @@ API specification.
 ## Description
 
 
-## Usage
+## Local development
 
+For development, it is recommend to run the service outside of Docker. This
+provides an easier debugging and editing experience. Steps 1 through 3 below
+need to be done only once.
+
+(1) Create a Python environment and install both the dependencies and the
+service itself:
+```bash
+pip install -r requirements.txt
+pip install -e . -v
+```
+
+(2) Bring up a MongoDB instance, for example by running
+```bash
+docker run -it --rm -p 27017:27017 --name mongo -d mongo
+```
+Initialize the database by running
+```bash
+python tools/initialize-mongodb.py
+```
+
+(3) Open the configuration file `drs_filer/config.yaml` and edit the `host` key
+in the `db` section to refer to the correct location of the MongoDB
+instance. For a local MonogDB instance, as installed in step (3), the host is
+`localhost`.
+
+(4) Bring up the server:
+```bash
+cd drs_filer && python app.py
+```
+
+Once the server is up and running, it can be queried, e.g. by running
+```bash
+curl localhost:8080/ga4gh/drs/v1/service-info
+```
+
+## Testing the server
+
+To run the unit test suite, activate the development environment (as set up
+in the previous section), and run the following command from the root of the
+repository:
+```bash
+pytest tests
+```
+
+If `pytest` cannot be found, install the testing requirements via `pip install
+-r requirements-test.txt`.
 
 ## Contributing
 
