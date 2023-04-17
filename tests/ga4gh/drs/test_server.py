@@ -215,7 +215,8 @@ def test_GetAccessURL_Key_Error():
 
 
 def test_GetAccessURL_Duplicate_Access_Id():
-    """GetAccessURL should return Internal Server Error on duplicate access keys.
+    """GetAccessURL should return Internal Server Error on duplicate access
+    keys.
     """
     app = Flask(__name__)
     app.config['FOCA'] = Config(db=MongoConfig(**MONGO_CONFIG))
