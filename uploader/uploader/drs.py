@@ -1,12 +1,16 @@
 """ DRS metadata request handling.
 """
 
+import datetime
 import json
 import requests
 from urllib.parse import urljoin
 
+from .files import compute_sha256, compute_size
 
-def _create_request_data(name, description):
+
+def _create_request_data(fname, name, description):
+    now_datetime = datetime.datetime.now().isoformat()
     request_data = {
         "access_methods": [
             {
@@ -18,20 +22,23 @@ def _create_request_data(name, description):
             }
         ],
         "aliases": [],
-        "checksums": [{"checksum": "string", "type": "sha-256"}],
+        "checksums": [{
+            "checksum": compute_sha256(fname),
+            "type": "sha-256"
+        }],
         "description": description,
         "mime_type": "application/json",
         "name": name,
-        "size": 0,
-        "created_time": "2023-04-17T12:16:16.957Z",
-        "updated_time": "2023-04-17T12:16:16.957Z",
-        "version": "string",
+        "size": compute_size(fname),
+        "created_time": now_datetime,
+        "updated_time": now_datetime,
+        "version": "1",
     }
     return request_data
 
 
-def post_metadata(name, base_url, description=""):
-    request_data = _create_request_data(name, description)
+def post_metadata(fname, name, base_url, description=""):
+    request_data = _create_request_data(fname, name, description)
     objects_endpoint = urljoin(base_url, "ga4gh/drs/v1/objects")
     response = requests.post(
         objects_endpoint,

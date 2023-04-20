@@ -1,4 +1,6 @@
 import argparse
+import os
+
 from .drs import post_metadata
 
 
@@ -22,8 +24,10 @@ def parse_args():
 
 def main():
     args = parse_args()
+
+    basename = os.path.basename(args.name)
     file_id = post_metadata(
-        args.name, args.url, args.desc
+        args.name, basename, args.url, args.desc
     )
     print(file_id)
 
