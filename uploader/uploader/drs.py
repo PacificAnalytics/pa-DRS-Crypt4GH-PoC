@@ -9,14 +9,14 @@ from urllib.parse import urljoin
 from .files import compute_sha256, compute_size
 
 
-def _create_request_data(fname, name, description):
+def _create_request_data(fname, name, resource_url, description):
     now_datetime = datetime.datetime.now().isoformat()
     request_data = {
         "access_methods": [
             {
                 "access_url": {
                     "headers": [],
-                    "url": "http://localhost:9000/mybucket/ex.pdf",
+                    "url": resource_url,
                 },
                 "type": "s3",
             }
@@ -37,8 +37,8 @@ def _create_request_data(fname, name, description):
     return request_data
 
 
-def post_metadata(fname, name, base_url, description=""):
-    request_data = _create_request_data(fname, name, description)
+def post_metadata(fname, name, resource_url, base_url, description=""):
+    request_data = _create_request_data(fname, name, resource_url, description)
     objects_endpoint = urljoin(base_url, "ga4gh/drs/v1/objects")
     response = requests.post(
         objects_endpoint,

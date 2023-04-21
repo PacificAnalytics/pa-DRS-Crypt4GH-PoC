@@ -16,11 +16,13 @@ def test_create_request_data():
     name = "obj"
     description = "an object"
     checksum = "1be7aaf1938cc19af7d2fdeb48a11c381dff8a98d4c4b47b3b0a5044a5255c04"  # noqa
+    obj_url = "http://url-to-object"
 
     with datafile("test file data") as fname:
-        rdata = _create_request_data(fname, name, description)
+        rdata = _create_request_data(fname, name, obj_url, description)
         assert rdata["name"] == name
         assert rdata["description"] == description
+        assert rdata["access_methods"][0]["access_url"]["url"] == obj_url
         assert rdata["checksums"][0]["checksum"] == checksum
         assert rdata["size"] == 14
         assert _is_iso8601(rdata["created_time"])
@@ -31,5 +33,6 @@ def test_post_metadata(requests_mock):
     requests_mock.post("http://localhost:8080/ga4gh/drs/v1/objects",
                        text="dummy_id")
     with datafile("test file data") as fname:
-        response = post_metadata(fname, "foo", "http://localhost:8080")
+        response = post_metadata(fname, "foo", "http://url-to-object",
+                                 "http://localhost:8080")
     assert response == "dummy_id"
