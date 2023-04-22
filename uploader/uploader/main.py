@@ -1,8 +1,7 @@
 import argparse
-import os
 
-from .drs import post_metadata
-from .store import upload_file
+from .drs import DRSClient, DRSMetadata
+from .store import BucketStore
 
 
 def parse_args():
@@ -25,14 +24,17 @@ def parse_args():
 
 def main():
     args = parse_args()
-    basename = os.path.basename(args.name)
 
-    resource_url = upload_file(
-        "localhost:9000", "mybucket", args.name, basename, secure=False)
+    # Upload byte data to storage server
+    store_client = BucketStore("localhost:9000", "mybucket", secure=False)
+    resource_url = store_client.upload_file(args.name)
 
-    file_id = post_metadata(
-        args.name, basename, resource_url, args.url, args.desc)
-    print(file_id)
+    # Upload metadata to DRS-filer
+    metadata = DRSMetadata.from_file(
+        args.name, url=resource_url, description=args.desc)
+    drs_client = DRSClient(args.url)
+    meta_id = drs_client.post_metadata(metadata)
+    print(meta_id)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,19 @@ from urllib.parse import urlparse, urlunparse
 
 from minio import Minio
 
+class BucketStore:
+
+    def __init__(self, endpoint, bucket, secure=True):
+        self._client = configure_client(endpoint, secure)
+        self._bucket = bucket
+
+    def upload_file(self, file_path, name=None):
+        name = name or os.path.basename(file_path)
+        with open(file_path, 'rb') as fp:
+            self._client.put_object(
+                self._bucket, name, fp, os.stat(file_path).st_size)
+            return _url_for_object(self._client, self._bucket, name)
+
 
 def configure_client(endpoint, secure=True):
     client = Minio(endpoint,
@@ -27,11 +40,3 @@ def _remove_query_string(url):
         '',  # remove the query string
         parsed_url.fragment
     ))
-
-
-def upload_file(endpoint, bucket, file_path, name, secure=True):
-    client = configure_client(endpoint, secure)
-    with open(file_path, 'rb') as fp:
-        client.put_object(
-            bucket, name, fp, os.stat(file_path).st_size)
-    return _url_for_object(client, bucket, name)

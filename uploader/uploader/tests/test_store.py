@@ -1,7 +1,7 @@
 import os
 from unittest.mock import patch
 
-from ..store import upload_file
+from ..store import BucketStore
 from .testing_utils import datafile
 
 
@@ -11,11 +11,12 @@ def test_upload_file():
     with patch("uploader.store.Minio") as cls, datafile("foo") as path:
         instance = cls.return_value
         instance.presigned_get_object.return_value = \
-            "http://upload-host/bucket/file.text?ExpiresIn=3600"
+            "http://upload-host/bucket/file.txt?ExpiresIn=3600"
+        store = BucketStore("localhost:9000", "bucket")
 
-        obj_url = upload_file("localhost:9000", "bucket", path, "file.txt")
+        obj_url = store.upload_file(path, "file.txt")
 
-        assert obj_url == "http://upload-host/bucket/file.text"
+        assert obj_url == "http://upload-host/bucket/file.txt"
         instance.put_object.assert_called_once()
         call_args = instance.put_object.call_args
         assert call_args[0][0] == "bucket"
