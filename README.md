@@ -14,6 +14,28 @@ API specification.
 ## Description
 
 
+## Deployment
+
+### Via Kubernetes
+
+### Via docker-compose
+
+Before bringing up the service for the first time, create a data directory for
+MongoDB to store its configuration and local data:
+```bash
+mkdir -p ../data/drs/db/
+```
+
+The service can then be brought up via Docker by running, from the root of the repository,
+```bash
+docker-compose up
+```
+
+The server runs on `localhost:8080` by default. The OpenAPI interface can be
+accessed at
+[http://localhost:8080/ga4gh/drs/v1/ui/](http://localhost:8080/ga4gh/drs/v1/ui/).
+
+
 ## Local development
 
 For development, it is recommend to run the service outside of Docker. This
