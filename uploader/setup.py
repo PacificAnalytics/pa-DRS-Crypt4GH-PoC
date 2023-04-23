@@ -18,6 +18,7 @@ setup(
     ],
     packages=find_packages(),
     install_requires=[
+        "minio",
         "requests",
     ],
     entry_points={
