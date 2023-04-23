@@ -34,7 +34,7 @@ def GetObject(object_id: str) -> Dict:
         DRS object as dictionary, JSONified if returned in app context.
     """
     db_collection = (
-        current_app.config['FOCA'].db.dbs['drsStore'].
+        current_app.config.foca.db.dbs['drsStore'].
         collections['objects'].client
     )
     obj = db_collection.find_one({"id": object_id})
@@ -112,7 +112,7 @@ def DeleteObject(object_id):
     """
 
     db_collection = (
-        current_app.config['FOCA'].db.dbs['drsStore'].
+        current_app.config.foca.db.dbs['drsStore'].
         collections['objects'].client
     )
     obj = db_collection.find_one({"id": object_id})
@@ -138,7 +138,7 @@ def DeleteAccessMethod(object_id: str, access_id: str) -> str:
     """
 
     db_collection = (
-        current_app.config['FOCA'].db.dbs['drsStore'].
+        current_app.config.foca.db.dbs['drsStore'].
         collections['objects'].client
     )
 
