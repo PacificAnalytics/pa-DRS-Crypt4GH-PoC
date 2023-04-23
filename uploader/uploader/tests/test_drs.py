@@ -1,7 +1,7 @@
 import datetime
 
 from ..drs import DRSClient, DRSMetadata, _create_request_data
-from .testing_utils import datafile
+from .testing_utils import datafile, patch_drs_filer
 
 
 def _is_iso8601(s):
@@ -41,11 +41,10 @@ def test_create_request_data():
     assert _is_iso8601(rdata["updated_time"])
 
 
-def test_post_metadata(requests_mock):
-    requests_mock.post("http://localhost:8080/ga4gh/drs/v1/objects",
-                       text="dummy_id")
+def test_post_metadata():
     drs_client = DRSClient("http://localhost:8080")
-    with datafile("test file data") as fname:
+    with (patch_drs_filer("http://localhost:8080"),
+          datafile("test file data") as fname):
         drs_meta = DRSMetadata.from_file(fname)
         response = drs_client.post_metadata(drs_meta)
     assert response == "dummy_id"

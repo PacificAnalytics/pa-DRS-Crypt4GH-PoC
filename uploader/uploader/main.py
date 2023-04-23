@@ -1,38 +1,32 @@
-import argparse
+import click
 
 from .drs import DRSClient, DRSMetadata
 from .store import BucketStore
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description=(
-            "Upload file data and register metadata with Data Repository "
-            "Service (DRS) web services")
-    )
-    parser.add_argument("name", type=str, help="File to upload")
-    parser.add_argument(
-        "--url", type=str, help="DRS base URL",
-        default="http://localhost:8080"
-    )
-    parser.add_argument(
-        "--desc", type=str, help="description of the object.", default="",
-    )
-    args = parser.parse_args()
-    return args
+@click.command()
+@click.argument("filename", type=click.Path(exists=True))
+@click.option("--drs-url", help="DRS-filer base URL", required=True)
+@click.option("--storage-url", help="Storage backend", required=True)
+@click.option("--bucket", help="Storage bucket", required=True)
+@click.option("--insecure", help="Connect to storage insecurely", is_flag=True)
+@click.option("--desc", help="Optional description of the object", default="")
+def main(filename, drs_url, storage_url, bucket, insecure, desc):
+    """ Upload DRS metatadata and file byte data.
+    """
 
-
-def main():
-    args = parse_args()
+    # Encrypt byte data
+    # ...
 
     # Upload byte data to storage server
-    store_client = BucketStore("localhost:9000", "mybucket", secure=False)
-    resource_url = store_client.upload_file(args.name)
+    store_client = BucketStore(
+        storage_url, bucket, secure=not insecure)
+    resource_url = store_client.upload_file(filename)
 
     # Upload metadata to DRS-filer
     metadata = DRSMetadata.from_file(
-        args.name, url=resource_url, description=args.desc)
-    drs_client = DRSClient(args.url)
+        filename, url=resource_url, description=desc)
+    drs_client = DRSClient(drs_url)
     meta_id = drs_client.post_metadata(metadata)
     print(meta_id)
 
