@@ -43,8 +43,8 @@ def test_create_request_data():
 
 def test_post_metadata():
     drs_client = DRSClient("http://localhost:8080")
-    with (patch_drs_filer("http://localhost:8080"),
-          datafile("test file data") as fname):
+    with patch_drs_filer("http://localhost:8080"), \
+         datafile("test file data") as fname:
         drs_meta = DRSMetadata.from_file(fname)
         response = drs_client.post_metadata(drs_meta)
     assert response == "dummy_id"

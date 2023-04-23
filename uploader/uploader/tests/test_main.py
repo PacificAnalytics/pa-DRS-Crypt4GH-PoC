@@ -5,9 +5,9 @@ from .testing_utils import datafile, patch_drs_filer, patch_minio
 
 def test_main(cli_runner):
 
-    with (patch_minio() as minio_client,
-          patch_drs_filer("http://drs.url") as drs_client,
-          datafile("foo") as path):
+    with patch_minio() as minio_client, \
+         patch_drs_filer("http://drs.url") as drs_client, \
+         datafile("foo") as path:
 
         # WHEN
         result = cli_runner.invoke(
