@@ -34,4 +34,4 @@ jobs:
         python -m pip install -r uploader/requirements-test.txt
         python -m pip install uploader -v
     - name: Run DRS-uploader tests
-      run: cd uploader && python -m pytest --cov=drs_uploader tests/
+      run: python -m pytest --cov=uploader uploader/uploader/tests/
