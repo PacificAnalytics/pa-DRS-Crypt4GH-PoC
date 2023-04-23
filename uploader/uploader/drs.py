@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 import datetime
 import json
+import logging
 import os
 from urllib.parse import urljoin
 
@@ -10,9 +11,17 @@ import requests
 
 from .files import compute_sha256, compute_size
 
+logger = logging.getLogger(__name__)
+
 
 @dataclass
 class DRSMetadata:
+    """ Simple DRS object wrapper.
+
+    Exposes just as many DRS attributes as are needed to register
+    a simple object; more may be exposed in the future if needed.
+
+    """
     name: str  # The name of the object, used to identify it
     checksum: str  # SHA-256 checksum
     size: int  # Size, in bytes
@@ -21,6 +30,18 @@ class DRSMetadata:
 
     @classmethod
     def from_file(cls, fpath, url="", description=""):
+        """ Initialize a DRSMetadata object from a file.
+
+        Parameters
+        ----------
+        fpath : str
+            The file to take metadata from.
+        url : str, optional
+            URL with file byte data.
+        description : str, optional
+            An optional free-form description.
+
+        """
         return cls(
             name=os.path.basename(fpath),
             checksum=compute_sha256(fpath),
@@ -31,20 +52,43 @@ class DRSMetadata:
 
 
 class DRSClient:
+    """ Thin client for DRS-filer object uploading.
+
+    The client currently only supports uploading of single objects, not
+    of bundles. As the DRS API is read-only, it uses the (custom) POST
+    endpoint that DRS-filer exposes to upload object data.
+
+    """
 
     def __init__(self, drs_url):
         self._drs_url = drs_url
 
-    def post_metadata(self, metadata):
-        request_data = _create_request_data(metadata)
+    def post_metadata(self, drs_metadata):
+        """ Upload a single metadata object.
+
+        Parameters
+        ----------
+        drs_metadata : DRSMetadata
+            DRS metadata object to be uploaded.
+
+        """
+        request_data = _create_request_data(drs_metadata)
         objects_endpoint = urljoin(self._drs_url, "ga4gh/drs/v1/objects")
+
+        logger.debug("Uploading metadata %s to %s",
+                     drs_metadata, objects_endpoint)
+
         response = requests.post(
             objects_endpoint,
             headers={"Content-Type": "application/json"},
             data=json.dumps(request_data))
 
         response.raise_for_status()
-        return response.content.decode("ascii").strip()
+        object_id = response.content.decode("ascii").strip()
+
+        logger.debug("Upload complete for object ID %s", object_id)
+
+        return object_id
 
 
 def _create_request_data(drs_metadata):
@@ -73,16 +117,3 @@ def _create_request_data(drs_metadata):
         "version": "1",
     }
     return request_data
-
-
-def post_metadata(drs_metadata, base_url):
-    return DRSClient(base_url).post_metadata(drs_metadata)
-    request_data = _create_request_data(drs_metadata)
-    objects_endpoint = urljoin(base_url, "ga4gh/drs/v1/objects")
-    response = requests.post(
-        objects_endpoint,
-        headers={"Content-Type": "application/json"},
-        data=json.dumps(request_data))
-
-    response.raise_for_status()
-    return response.content.decode("ascii").strip()

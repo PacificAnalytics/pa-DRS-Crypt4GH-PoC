@@ -2,6 +2,7 @@ import click
 
 from .drs import DRSClient, DRSMetadata
 from .store import BucketStore
+from .utils import configure_logging
 
 
 @click.command()
@@ -14,6 +15,7 @@ from .store import BucketStore
 def main(filename, drs_url, storage_url, bucket, insecure, desc):
     """ Upload DRS metatadata and file byte data.
     """
+    configure_logging()
 
     # Encrypt byte data
     # ...
