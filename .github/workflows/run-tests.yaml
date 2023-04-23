@@ -32,6 +32,6 @@ jobs:
     - name: Install DRS-uploader package
       run: |
         python -m pip install -r uploader/requirements-test.txt
-        python -m pip install uploader -v
+        python -m pip install uploader/ -v
     - name: Run DRS-uploader tests
       run: python -m pytest --cov=uploader uploader/uploader/tests/
