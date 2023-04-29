@@ -88,6 +88,8 @@ endpoints:
         updatedAt: "2020-01-01"
         environment: "ENV"
         version: "0.0.0"
+        crypt4gh:
+          pubkey: ["/vLx86R5G4saPU+NNoXM3PR9gPA7zzocbhw8AKD5ZVs="]
     url_prefix: http
     external_host: 193.166.24.114
     external_port: 8080
