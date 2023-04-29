@@ -1,5 +1,7 @@
 import click
 
+from .crypt4gh_client import get_server_pubkeys
+from .crypt4gh_wrapper import encrypt, get_seckey
 from .drs import DRSClient, DRSMetadata
 from .store import BucketStore
 from .utils import configure_logging
@@ -12,13 +14,18 @@ from .utils import configure_logging
 @click.option("--bucket", help="Storage bucket", required=True)
 @click.option("--insecure", help="Connect to storage insecurely", is_flag=True)
 @click.option("--desc", help="Optional description of the object", default="")
-def main(filename, drs_url, storage_url, bucket, insecure, desc):
+@click.option("--sk", help="Secret key of the client", required=True)
+def main(filename, drs_url, storage_url, bucket, insecure, desc, sk):
     """ Upload DRS metatadata and file byte data.
     """
     configure_logging()
 
     # Encrypt byte data
-    # ...
+    drs_client = DRSClient(drs_url)
+    keys = get_server_pubkeys(drs_client)
+    if keys:  # supports crypt4gh
+        client_seckey = get_seckey(sk)
+        filename = encrypt(client_seckey, keys[0], filename)
 
     # Upload byte data to storage server
     store_client = BucketStore(
@@ -28,7 +35,6 @@ def main(filename, drs_url, storage_url, bucket, insecure, desc):
     # Upload metadata to DRS-filer
     metadata = DRSMetadata.from_file(
         filename, url=resource_url, description=desc)
-    drs_client = DRSClient(drs_url)
     meta_id = drs_client.post_metadata(metadata)
     print(meta_id)
 

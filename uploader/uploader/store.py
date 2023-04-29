@@ -42,6 +42,9 @@ class BucketStore:
         logger.debug("Finished file upload. URL: %s", url)
         return url
 
+    def download_file(self, file_id, file_path):
+        self._client.fget_object(self._bucket, file_id, file_path)
+
 
 def _configure_client(endpoint, secure=True):
     client = Minio(endpoint,
