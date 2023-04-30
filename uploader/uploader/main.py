@@ -1,6 +1,6 @@
 import click
 
-from .crypt4gh_client import get_server_pubkeys
+from .crypt4gh_client import get_server_pubkey
 from .crypt4gh_wrapper import encrypt, get_seckey
 from .drs import DRSClient, DRSMetadata
 from .store import BucketStore
@@ -22,10 +22,10 @@ def main(filename, drs_url, storage_url, bucket, insecure, desc, sk):
 
     # Encrypt byte data
     drs_client = DRSClient(drs_url)
-    keys = get_server_pubkeys(drs_client)
-    if keys:  # supports crypt4gh
+    server_pubkey = get_server_pubkey(drs_client)
+    if server_pubkey:  # supports crypt4gh
         client_seckey = get_seckey(sk)
-        filename = encrypt(client_seckey, keys[0], filename)
+        filename = encrypt(client_seckey, server_pubkey, filename)
 
     # Upload byte data to storage server
     store_client = BucketStore(

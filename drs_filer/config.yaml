@@ -88,9 +88,13 @@ endpoints:
         updatedAt: "2020-01-01"
         environment: "ENV"
         version: "0.0.0"
-        crypt4gh:
-          pubkey: ["ZGCGOQ14EGHEl8Jpt9plnVU+PuZBHQXkqS5kvlKP/Eg="]
     url_prefix: http
     external_host: 193.166.24.114
     external_port: 8080
     api_path: ga4gh/drs/v1
+
+crypt4gh:
+    pubkey_path: "server-pk.key"
+    seckey_path: "server-sk.key"
+    storage_host: "localhost:9000"
+    storage_bucket: "mybucket"
