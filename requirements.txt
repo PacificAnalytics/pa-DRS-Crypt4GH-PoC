@@ -1,3 +1,4 @@
 foca==0.12.0
 gunicorn==20.0.4
 setuptools==65.5.1
+crypt4gh==1.6
