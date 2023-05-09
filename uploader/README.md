@@ -87,9 +87,10 @@ You can adjust the Minio root user and password as desired.
 mc alias set local http://127.0.0.1:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD
 ```
 
-(3) Create a bucket:
+(3) Create a bucket and configure it to allow anonymous downloads:
 ```bash
 mc mb local/mybucket
+mc anonymous set download local/mybucket
 ```
 
 (4) Create a local user with upload privileges
