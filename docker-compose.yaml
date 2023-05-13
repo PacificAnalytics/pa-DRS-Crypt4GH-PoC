@@ -11,6 +11,8 @@ services:
         command: bash -c "cd /app/drs_filer; python app.py"
         ports:
             - "8080:8080"
+        volumes:
+            - .:/app
 
     mongodb: 
         image: mongo:3.6
