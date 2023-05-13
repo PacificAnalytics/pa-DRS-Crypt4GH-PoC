@@ -1,3 +1,6 @@
+# Keep environment secrets out of the container
+.env
+
 # Ignore Git- and GitHub-specific files and dirs
 .git
 .github
