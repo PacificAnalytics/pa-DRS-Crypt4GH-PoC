@@ -20,70 +20,56 @@ API specification.
 
 ### Via docker-compose
 
-Before bringing up the service for the first time, create a data directory for
+Prerequisites: you should have [Docker](https://www.docker.com/) installed, as well as the [Minio client](https://min.io/docs/minio/linux/reference/minio-mc.html).
+
+(1) Before bringing up the service for the first time, create a data directory for
 MongoDB to store its configuration and local data:
 ```bash
 mkdir -p ../data/drs/db/
 ```
 
-The service can then be brought up via Docker by running, from the root of the repository,
+(2) Create a file `.env` in the root of the repository containing the username and password for the Minio root account and for a Minio service account. For example:
 ```bash
-docker-compose up
+cat .env
+MINIO_ROOT_USER=miniorootuser
+MINIO_ROOT_PASSWORD=miniorootpassword
+ACCESS_KEY=miniolocaluser
+SECRET_KEY=miniolocaluserpwd123
+```
+
+(3) Bring up the service by running, from the root of the repository,
+```bash
+docker compose up
+```
+
+(4) Provision Minio by setting up a bucket to hold encrypted files and a user account that can be used to upload to it:
+```bash
+./configure-minio.sh
 ```
 
 The server runs on `localhost:8080` by default. The OpenAPI interface can be
 accessed at
-[http://localhost:8080/ga4gh/drs/v1/ui/](http://localhost:8080/ga4gh/drs/v1/ui/).
+[http://localhost:8080/ga4gh/drs/v1/ui/](http://localhost:8080/ga4gh/drs/v1/ui/). The Minio dashboad can be found at [http://localhost:9000](http://localhost:9000) and can be accessed using the root user account configured in step (2).
 
 
 ## Local development
 
-For development, it is recommend to run the service outside of Docker. This
-provides an easier debugging and editing experience. Steps 1 through 3 below
-need to be done only once.
+The source code repository is mounted as a volume inside the Docker container for the server. That means that you can edit the code in this repo, and the server will automatically restart when any changes are detected. There is no need to rebuild or even restart the Docker container.
 
-(1) Create a Python environment and install both the dependencies and the
-service itself:
+To run the unit tests, it is necessary to set up a Python environment (as a virtual environment, via Conda, etc) containing the server and its dependencies. From the root of the repo, run:
 ```bash
 pip install -r requirements.txt
 pip install -e . -v
 ```
-
-(2) Bring up a MongoDB instance, for example by running
-```bash
-docker run -it --rm -p 27017:27017 --name mongo -d mongo
-```
-Initialize the database by running
-```bash
-python tools/initialize-mongodb.py
-```
-
-(3) Open the configuration file `drs_filer/config.yaml` and edit the `host` key
-in the `db` section to refer to the correct location of the MongoDB
-instance. For a local MonogDB instance, as installed in step (3), the host is
-`localhost`.
-
-(4) Bring up the server:
-```bash
-cd drs_filer && python app.py
-```
-
-Once the server is up and running, it can be queried, e.g. by running
-```bash
-curl localhost:8080/ga4gh/drs/v1/service-info
-```
-
-## Testing the server
-
-To run the unit test suite, activate the development environment (as set up
-in the previous section), and run the following command from the root of the
-repository:
+To run the unit test suite, activate the development environment and run the following command:
 ```bash
 pytest tests
 ```
 
 If `pytest` cannot be found, install the testing requirements via `pip install
 -r requirements-test.txt`.
+
+The unit test suite does not require the server to be running.
 
 ## Contributing
 
