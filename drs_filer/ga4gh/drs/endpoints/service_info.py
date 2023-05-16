@@ -9,6 +9,7 @@ from drs_filer.errors.exceptions import (
     NotFound,
     ValidationError,
 )
+from uploader.crypt4gh_wrapper import get_pubkey_b64
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,13 @@ class RegisterServiceInfo:
         self.external_port = conf['external_port']
         self.api_path = conf['api_path']
         self.conf_info = conf['service_info']
+
+        self.conf_info = service_info = conf['service_info']
+        crypt4gh_conf = getattr(current_app.config.foca, "crypt4gh", None)
+        if crypt4gh_conf:
+            service_info["crypt4gh"] = crypt4gh = {}
+            crypt4gh["pubkey"] = get_pubkey_b64(crypt4gh_conf["pubkey_path"])
+
         self.db_coll_info = (
             current_app.config.foca.db.dbs['drsStore']
             .collections['service_info'].client

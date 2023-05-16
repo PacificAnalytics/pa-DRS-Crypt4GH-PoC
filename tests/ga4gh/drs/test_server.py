@@ -72,7 +72,11 @@ SERVICE_INFO_CONFIG = {
     "updatedAt": "2019-06-04T12:58:19Z",
     "version": "1.0.0"
 }
-
+SERVICE_INFO_CRYPT4GH_CONFIG = {
+    "crypt4gh": {
+        "pubkey": "AmEsb2n0m5mc6aadwpK4sT6zNapqgH+nnysNtpKa2Ag="
+    }
+}
 ENDPOINT_CONFIG = {
     "objects": {
         "id_charset": 'string.digits',
@@ -87,6 +91,10 @@ ENDPOINT_CONFIG = {
     "external_host": "1.2.3.4",
     "external_port": 8080,
     "api_path": "ga4gh/drs/v1"
+}
+CRYPT4GH_CONFIG = {
+    "pubkey_path": "tests/server-pk.key",
+    "seckey_path": "tests/server-sk.key",
 }
 
 data_objects_path = "tests/data_objects.json"
@@ -433,6 +441,28 @@ def test_getServiceInfo():
     with app.app_context():
         res = getServiceInfo.__wrapped__()
         assert res == SERVICE_INFO_CONFIG
+
+
+# GET /service-info
+def test_getServiceInfo_crypt4gh():
+    """Test for getting service info with crypt4gh keydata."""
+    app = Flask(__name__)
+    app.config.foca = Config(
+        db=MongoConfig(**MONGO_CONFIG),
+        endpoints=ENDPOINT_CONFIG,
+        crypt4gh=CRYPT4GH_CONFIG,
+    )
+    mock_resp = deepcopy(SERVICE_INFO_CONFIG)
+    mock_resp.update(SERVICE_INFO_CRYPT4GH_CONFIG)
+    app.config.foca.db.dbs['drsStore'].collections['service_info'] \
+        .client = mongomock.MongoClient().db.collection
+    app.config.foca.db.dbs['drsStore'].collections['service_info'] \
+        .client.insert_one(mock_resp)
+
+    with app.app_context():
+        res = getServiceInfo.__wrapped__()
+        assert res == {**SERVICE_INFO_CONFIG,
+                       **SERVICE_INFO_CRYPT4GH_CONFIG}
 
 
 # POST /service-info
