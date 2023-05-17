@@ -28,9 +28,8 @@ MongoDB to store its configuration and local data:
 mkdir -p ../data/drs/db/
 ```
 
-(2) Create a file `.env` in the root of the repository containing the username and password for the Minio root account and for a Minio service account. For example:
+(2) Create a file `.env` in the root of the repository containing the username and password for the Minio root account and for a Minio service account. An example such file is given below:
 ```bash
-cat .env
 MINIO_ROOT_USER=miniorootuser
 MINIO_ROOT_PASSWORD=miniorootpassword
 ACCESS_KEY=miniolocaluser
