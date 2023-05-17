@@ -8,9 +8,12 @@ services:
         restart: unless-stopped
         links: 
             - mongodb
+            - minio
         command: bash -c "cd /app/drs_filer; python app.py"
         ports:
             - "8080:8080"
+        volumes:
+            - .:/app
 
     mongodb: 
         image: mongo:3.6
@@ -19,3 +22,14 @@ services:
             - ../data/drs/db:/data/db
         ports:
             - "27017:27017"
+
+    minio:
+        image: quay.io/minio/minio
+        restart: unless-stopped
+        ports:
+            - "9000:9000"
+            - "9090:9090"
+        env_file: .env
+        volumes:
+            - ../data/minio:/data
+        command: server /data --console-address ":9090"
