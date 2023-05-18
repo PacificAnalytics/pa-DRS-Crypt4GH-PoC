@@ -13,15 +13,17 @@ services:
         ports:
             - "8080:8080"
         volumes:
-            - .:/app
+            - appdata:/app
 
     mongodb: 
         image: mongo:3.6
+        container_name: pa-mongo-db
         restart: unless-stopped
         volumes:
-            - ../data/drs/db:/data/db
+            - mongodata:/data/db
         ports:
             - "27017:27017"
+
 
     minio:
         image: quay.io/minio/minio
@@ -31,5 +33,17 @@ services:
             - "9090:9090"
         env_file: .env
         volumes:
-            - ../data/minio:/data
+            - miniodata:/data
         command: server /data --console-address ":9090"
+
+
+
+
+volumes:
+    appdata:
+
+    mongodata:
+
+    miniodata:
+
+    
