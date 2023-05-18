@@ -2,6 +2,7 @@ version: '3.6'
 services:
 
     drs:
+        container_name: pa-drs
         build:
             context: .
             dockerfile: Dockerfile
@@ -27,6 +28,7 @@ services:
 
     minio:
         image: quay.io/minio/minio
+        container_name: pa-minio
         restart: unless-stopped
         ports:
             - "9000:9000"
