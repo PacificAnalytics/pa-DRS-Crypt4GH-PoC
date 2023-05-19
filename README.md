@@ -28,9 +28,8 @@ MongoDB to store its configuration and local data:
 mkdir -p ../data/drs/db/
 ```
 
-(2) Create a file `.env` in the root of the repository containing the username and password for the Minio root account and for a Minio service account. For example:
+(2) Create a file `.env` in the root of the repository containing the username and password for the Minio root account and for a Minio service account. An example such file is given below:
 ```bash
-cat .env
 MINIO_ROOT_USER=miniorootuser
 MINIO_ROOT_PASSWORD=miniorootpassword
 ACCESS_KEY=miniolocaluser
@@ -70,6 +69,21 @@ If `pytest` cannot be found, install the testing requirements via `pip install
 -r requirements-test.txt`.
 
 The unit test suite does not require the server to be running.
+
+## Running the integration tests
+
+The server comes with a number of basic integration or "smoke" tests that test basic end-to-end functionality of the entire server stack. The goal is not to exhaustively test the server and make manual QA superfluous, but rather to detect simple breakage that cannot be detected at the level of the unit tests early on.
+
+Currently the following scenarios are tested:
+
+1. Querying the service-info endpoint and comparing the output with what is expected.
+
+To run the integration test suite, bring up the server as described above, and then run (from within the development environment):
+```bash
+pytest integration
+```
+
+The integration test suite is automatically run under GitHub actions as well, for every PR.
 
 ## Contributing
 
