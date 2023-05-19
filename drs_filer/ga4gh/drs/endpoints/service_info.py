@@ -42,11 +42,11 @@ class RegisterServiceInfo:
         self.api_path = conf['api_path']
         self.conf_info = conf['service_info']
 
-        self.conf_info = service_info = conf['service_info']
-        crypt4gh_conf = getattr(current_app.config.foca, "crypt4gh", None)
-        if crypt4gh_conf:
-            service_info["crypt4gh"] = crypt4gh = {}
-            crypt4gh["pubkey"] = get_pubkey_b64(crypt4gh_conf["pubkey_path"])
+        # Update service info with crypt4gh-specific entries (e.g. server
+        # public key). Dictionary is empty if the server is not configured to
+        # support encryption.
+        crypt4gh_info = self._get_crypt4gh_info()
+        self.conf_info.update(crypt4gh_info)
 
         self.db_coll_info = (
             current_app.config.foca.db.dbs['drsStore']
@@ -142,3 +142,15 @@ class RegisterServiceInfo:
             f"{self.api_path}/service-info"
         )
         return headers
+
+    def _get_crypt4gh_info(self) -> Dict:
+        """Build crypt4gh-specific service info dictionary.
+
+        Returns:
+            Crypt4gh service info.
+        """
+        crypt4gh_info = {}
+        conf = getattr(current_app.config.foca, "crypt4gh", None)
+        if conf:
+            crypt4gh_info["pubkey"] = get_pubkey_b64(conf["pubkey_path"])
+        return crypt4gh_info
