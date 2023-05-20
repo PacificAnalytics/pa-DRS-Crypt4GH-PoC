@@ -147,10 +147,18 @@ class RegisterServiceInfo:
         """Build crypt4gh-specific service info dictionary.
 
         Returns:
-            Crypt4gh service info.
+            Crypt4gh service info, or an empty dictionary if not configured
+            to support encryption.
         """
-        crypt4gh_info = {}
-        conf = getattr(current_app.config.foca, "crypt4gh", None)
-        if conf:
-            crypt4gh_info["pubkey"] = get_pubkey_b64(conf["pubkey_path"])
+        crypt4gh_conf = getattr(current_app.config.foca, "crypt4gh", None)
+        if crypt4gh_conf:
+            pubkey = get_pubkey_b64(crypt4gh_conf["pubkey_path"])
+            crypt4gh_info = {
+                "crypt4gh": {
+                    "pubkey": pubkey,
+                }
+            }
+        else:
+            crypt4gh_info = {}
+
         return crypt4gh_info
