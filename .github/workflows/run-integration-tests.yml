@@ -11,6 +11,11 @@ jobs:
       run: cp integration/env.txt .env
     - name: Build and bring up the stack
       run: docker compose up -d
+    - name: Install the Minio client
+      run: |
+        curl https://dl.min.io/client/mc/release/linux-amd64/mc --create-dirs -o $HOME/minio-binaries/mc
+        chmod +x $HOME/minio-binaries/mc
+        echo "PATH=${PATH}:${HOME}/minio-binaries/" >> "$GITHUB_ENV"
     - name: Configure Minio
       run: ./configure-minio.sh
     - name: Setup minio host mapping
