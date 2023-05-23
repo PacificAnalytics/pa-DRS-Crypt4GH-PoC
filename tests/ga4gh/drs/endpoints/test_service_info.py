@@ -58,6 +58,11 @@ SERVICE_INFO_CONFIG = {
     "updatedAt": "2019-06-04T12:58:19Z",
     "version": "1.0.0"
 }
+SERVICE_INFO_CRYPT4GH_CONFIG = {
+    "crypt4gh": {
+        "pubkey": "AmEsb2n0m5mc6aadwpK4sT6zNapqgH+nnysNtpKa2Ag="
+    }
+}
 ENDPOINT_CONFIG = {
     "objects": {
         "id_charset": 'string.digits',
@@ -72,6 +77,10 @@ ENDPOINT_CONFIG = {
     "external_host": "1.2.3.4",
     "external_port": 8080,
     "api_path": "ga4gh/drs/v1"
+}
+CRYPT4GH_CONFIG = {
+    "pubkey_path": "tests/server-pk.key",
+    "seckey_path": "tests/server-sk.key",
 }
 SERVICE_CONFIG = {
     "url_prefix": "http",
@@ -270,3 +279,21 @@ def test__get_headers():
         service_info = RegisterServiceInfo()
         headers = service_info._get_headers()
         assert headers == HEADERS_SERVICE_INFO
+
+
+def test_get_crypt4gh_info():
+    app = Flask(__name__)
+    app.config.foca = Config(
+        db=MongoConfig(**MONGO_CONFIG),
+        endpoints=ENDPOINT_CONFIG,
+        crypt4gh=CRYPT4GH_CONFIG,
+    )
+    app.config.foca.db.dbs['drsStore'].collections['service_info'] \
+        .client = mongomock.MongoClient().db.collection
+
+    with app.app_context():
+        service_info = RegisterServiceInfo()
+        service_info.set_service_info_from_config()
+        info = service_info.get_service_info()
+        assert info == {**SERVICE_INFO_CONFIG,
+                        **SERVICE_INFO_CRYPT4GH_CONFIG}

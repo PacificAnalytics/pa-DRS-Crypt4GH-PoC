@@ -12,6 +12,9 @@ def expected_response():
     return {
         "contactUrl": "contact/abc",
         "createdAt": "2020-01-01",
+        "crypt4gh": {
+            "pubkey": "AmEsb2n0m5mc6aadwpK4sT6zNapqgH+nnysNtpKa2Ag="
+        },
         "description": "Description of service.",
         "documentationUrl": "docs/abc",
         "environment": "ENV",

@@ -9,6 +9,7 @@ from drs_filer.errors.exceptions import (
     NotFound,
     ValidationError,
 )
+from uploader.crypt4gh_wrapper import get_pubkey_b64
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,13 @@ class RegisterServiceInfo:
         self.external_port = conf['external_port']
         self.api_path = conf['api_path']
         self.conf_info = conf['service_info']
+
+        # Update service info with crypt4gh-specific entries (e.g. server
+        # public key). Dictionary is empty if the server is not configured to
+        # support encryption.
+        crypt4gh_info = self._get_crypt4gh_info()
+        self.conf_info.update(crypt4gh_info)
+
         self.db_coll_info = (
             current_app.config.foca.db.dbs['drsStore']
             .collections['service_info'].client
@@ -134,3 +142,23 @@ class RegisterServiceInfo:
             f"{self.api_path}/service-info"
         )
         return headers
+
+    def _get_crypt4gh_info(self) -> Dict:
+        """Build crypt4gh-specific service info dictionary.
+
+        Returns:
+            Crypt4gh service info, or an empty dictionary if not configured
+            to support encryption.
+        """
+        crypt4gh_conf = getattr(current_app.config.foca, "crypt4gh", None)
+        if crypt4gh_conf:
+            pubkey = get_pubkey_b64(crypt4gh_conf["pubkey_path"])
+            crypt4gh_info = {
+                "crypt4gh": {
+                    "pubkey": pubkey,
+                }
+            }
+        else:
+            crypt4gh_info = {}
+
+        return crypt4gh_info

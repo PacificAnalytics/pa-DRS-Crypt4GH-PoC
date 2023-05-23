@@ -16,6 +16,19 @@ API specification.
 
 ## Deployment
 
+### Preliminary setup
+
+(1) Create a Python environment (as a virtual environment, via Conda, etc) and install the server application and its dependencies. From the root of the repo, run:
+```bash
+pip install -r requirements.txt
+pip install -e . -v
+```
+
+(2) Create a public and a private key for the server:
+```bash
+crypt4gh-keygen --sk server-sk.key --pk server-pk.key
+```
+
 ### Via Kubernetes
 
 ### Via docker-compose
@@ -55,12 +68,7 @@ accessed at
 
 The source code repository is mounted as a volume inside the Docker container for the server. That means that you can edit the code in this repo, and the server will automatically restart when any changes are detected. There is no need to rebuild or even restart the Docker container.
 
-To run the unit tests, it is necessary to set up a Python environment (as a virtual environment, via Conda, etc) containing the server and its dependencies. From the root of the repo, run:
-```bash
-pip install -r requirements.txt
-pip install -e . -v
-```
-To run the unit test suite, activate the development environment and run the following command:
+To run the unit tests, it is necessary to activate the Python environment set up above. To run the unit test suite, run the following command:
 ```bash
 pytest tests
 ```
