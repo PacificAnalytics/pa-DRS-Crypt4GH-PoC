@@ -1,3 +1,7 @@
+# Keep environment secrets out of GitHub
+.env
+*.key
+
 ###########################
 ### AUTOMATIC ADDITIONS ###
 ###########################

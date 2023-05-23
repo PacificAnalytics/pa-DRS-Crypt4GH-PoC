@@ -16,74 +16,82 @@ API specification.
 
 ## Deployment
 
-### Via Kubernetes
+### Preliminary setup
 
-### Via docker-compose
-
-Before bringing up the service for the first time, create a data directory for
-MongoDB to store its configuration and local data:
-```bash
-mkdir -p ../data/drs/db/
-```
-
-The service can then be brought up via Docker by running, from the root of the repository,
-```bash
-docker-compose up
-```
-
-The server runs on `localhost:8080` by default. The OpenAPI interface can be
-accessed at
-[http://localhost:8080/ga4gh/drs/v1/ui/](http://localhost:8080/ga4gh/drs/v1/ui/).
-
-
-## Local development
-
-For development, it is recommend to run the service outside of Docker. This
-provides an easier debugging and editing experience. Steps 1 through 3 below
-need to be done only once.
-
-(1) Create a Python environment and install both the dependencies and the
-service itself:
+(1) Create a Python environment (as a virtual environment, via Conda, etc) and install the server application and its dependencies. From the root of the repo, run:
 ```bash
 pip install -r requirements.txt
 pip install -e . -v
 ```
 
-(2) Bring up a MongoDB instance, for example by running
+(2) Create a public and a private key for the server:
 ```bash
-docker run -it --rm -p 27017:27017 --name mongo -d mongo
-```
-Initialize the database by running
-```bash
-python tools/initialize-mongodb.py
+crypt4gh-keygen --sk server-sk.key --pk server-pk.key
 ```
 
-(3) Open the configuration file `drs_filer/config.yaml` and edit the `host` key
-in the `db` section to refer to the correct location of the MongoDB
-instance. For a local MonogDB instance, as installed in step (3), the host is
-`localhost`.
+### Via Kubernetes
 
-(4) Bring up the server:
+### Via docker-compose
+
+Prerequisites: you should have [Docker](https://www.docker.com/) installed, as well as the [Minio client](https://min.io/docs/minio/linux/reference/minio-mc.html).
+
+(1) Before bringing up the service for the first time, create a data directory for
+MongoDB to store its configuration and local data:
 ```bash
-cd drs_filer && python app.py
+mkdir -p ../data/drs/db/
 ```
 
-Once the server is up and running, it can be queried, e.g. by running
+(2) Create a file `.env` in the root of the repository containing the username and password for the Minio root account and for a Minio service account. An example such file is given below:
 ```bash
-curl localhost:8080/ga4gh/drs/v1/service-info
+MINIO_ROOT_USER=miniorootuser
+MINIO_ROOT_PASSWORD=miniorootpassword
+ACCESS_KEY=miniolocaluser
+SECRET_KEY=miniolocaluserpwd123
 ```
 
-## Testing the server
+(3) Bring up the service by running, from the root of the repository,
+```bash
+docker compose up
+```
 
-To run the unit test suite, activate the development environment (as set up
-in the previous section), and run the following command from the root of the
-repository:
+(4) Provision Minio by setting up a bucket to hold encrypted files and a user account that can be used to upload to it:
+```bash
+./configure-minio.sh
+```
+
+The server runs on `localhost:8080` by default. The OpenAPI interface can be
+accessed at
+[http://localhost:8080/ga4gh/drs/v1/ui/](http://localhost:8080/ga4gh/drs/v1/ui/). The Minio dashboad can be found at [http://localhost:9000](http://localhost:9000) and can be accessed using the root user account configured in step (2).
+
+
+## Local development
+
+The source code repository is mounted as a volume inside the Docker container for the server. That means that you can edit the code in this repo, and the server will automatically restart when any changes are detected. There is no need to rebuild or even restart the Docker container.
+
+To run the unit tests, it is necessary to activate the Python environment set up above. To run the unit test suite, run the following command:
 ```bash
 pytest tests
 ```
 
 If `pytest` cannot be found, install the testing requirements via `pip install
 -r requirements-test.txt`.
+
+The unit test suite does not require the server to be running.
+
+## Running the integration tests
+
+The server comes with a number of basic integration or "smoke" tests that test basic end-to-end functionality of the entire server stack. The goal is not to exhaustively test the server and make manual QA superfluous, but rather to detect simple breakage that cannot be detected at the level of the unit tests early on.
+
+Currently the following scenarios are tested:
+
+1. Querying the service-info endpoint and comparing the output with what is expected.
+
+To run the integration test suite, bring up the server as described above, and then run (from within the development environment):
+```bash
+pytest integration
+```
+
+The integration test suite is automatically run under GitHub actions as well, for every PR.
 
 ## Contributing
 

@@ -52,12 +52,12 @@ def test_register_object_literal_id_charset():
     app = Flask(__name__)
     endpoint_config = deepcopy(ENDPOINT_CONFIG)
     endpoint_config['objects']['id_charset'] = 'abcdef'
-    app.config['FOCA'] = \
+    app.config.foca = \
         Config(
             db=MongoConfig(**MONGO_CONFIG),
             endpoints=endpoint_config,
         )
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
 
     request_data = {"name": "mock_name"}
@@ -71,12 +71,12 @@ def test_register_object_invalid_config():
     app = Flask(__name__)
     endpoint_config = deepcopy(ENDPOINT_CONFIG)
     del endpoint_config['url_prefix']
-    app.config['FOCA'] = \
+    app.config.foca = \
         Config(
             db=MongoConfig(**MONGO_CONFIG),
             endpoints=endpoint_config,
         )
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
 
     request_data = {"name": "mock_name"}
@@ -90,15 +90,15 @@ def test_register_object_exceed_retries():
     identifier.
     """
     app = Flask(__name__)
-    app.config['FOCA'] = \
+    app.config.foca = \
         Config(
             db=MongoConfig(**MONGO_CONFIG),
             endpoints=ENDPOINT_CONFIG,
         )
     mock_resp = MagicMock(side_effect=DuplicateKeyError(''))
-    app.config['FOCA'].db.dbs['drsStore'].collections['objects']. \
+    app.config.foca.db.dbs['drsStore'].collections['objects']. \
         client = MagicMock()
-    app.config['FOCA'].db.dbs['drsStore'].collections['objects']. \
+    app.config.foca.db.dbs['drsStore'].collections['objects']. \
         client.insert_one = mock_resp
 
     request_data = {"name": "mock_name", "access_methods": []}
@@ -110,7 +110,7 @@ def test_register_object_exceed_retries():
 def test_add_access_ids():
     """Test for __add_access_ids()."""
     app = Flask(__name__)
-    app.config['FOCA'] = Config(endpoints=ENDPOINT_CONFIG)
+    app.config.foca = Config(endpoints=ENDPOINT_CONFIG)
     objects = json.loads(open(data_objects_path, "r").read())
     mock_data = objects[0]['access_methods']
     with app.app_context():

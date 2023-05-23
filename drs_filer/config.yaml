@@ -94,7 +94,7 @@ endpoints:
     api_path: ga4gh/drs/v1
 
 crypt4gh:
-    pubkey_path: "server-pk.key"
-    seckey_path: "server-sk.key"
     storage_host: "localhost:9000"
     storage_bucket: "mybucket"
+    pubkey_path: "/app/tests/server-pk.key"
+    seckey_path: "/app/tests/server-sk.key"

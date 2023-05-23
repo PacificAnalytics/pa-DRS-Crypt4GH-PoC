@@ -72,7 +72,11 @@ SERVICE_INFO_CONFIG = {
     "updatedAt": "2019-06-04T12:58:19Z",
     "version": "1.0.0"
 }
-
+SERVICE_INFO_CRYPT4GH_CONFIG = {
+    "crypt4gh": {
+        "pubkey": "AmEsb2n0m5mc6aadwpK4sT6zNapqgH+nnysNtpKa2Ag="
+    }
+}
 ENDPOINT_CONFIG = {
     "objects": {
         "id_charset": 'string.digits',
@@ -88,6 +92,10 @@ ENDPOINT_CONFIG = {
     "external_port": 8080,
     "api_path": "ga4gh/drs/v1"
 }
+CRYPT4GH_CONFIG = {
+    "pubkey_path": "tests/server-pk.key",
+    "seckey_path": "tests/server-sk.key",
+}
 
 data_objects_path = "tests/data_objects.json"
 
@@ -101,12 +109,12 @@ MOCK_DATA_OBJECT = {
 def test_GetObject():
     """Test for getting DRSObject meta-data using `object_id`"""
     app = Flask(__name__)
-    app.config['FOCA'] = Config(db=MongoConfig(**MONGO_CONFIG))
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG))
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+        obj['_id'] = app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj).inserted_id
     del objects[0]['_id']
     with app.app_context():
@@ -117,13 +125,13 @@ def test_GetObject():
 def test_GetObject_Not_Found():
     with pytest.raises(ObjectNotFound):
         app = Flask(__name__)
-        app.config['FOCA'] = Config(db=MongoConfig(**MONGO_CONFIG))
-        app.config['FOCA'].db.dbs['drsStore']. \
+        app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG))
+        app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client = mongomock.MongoClient().\
             db.collection
         objects = json.loads(open(data_objects_path, "r").read())
         for obj in objects:
-            obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+            obj['_id'] = app.config.foca.db.dbs['drsStore']. \
                 collections['objects'].client.insert_one(obj).inserted_id
         del objects[0]['_id']
         with app.app_context():
@@ -134,12 +142,12 @@ def test_GetAccessURL():
     """Test for getting DRSObject access url using `object_id` and `access_id`
     """
     app = Flask(__name__)
-    app.config['FOCA'] = Config(db=MongoConfig(**MONGO_CONFIG))
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG))
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+        obj['_id'] = app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj).inserted_id
     del objects[0]['_id']
     with app.app_context():
@@ -158,13 +166,13 @@ def test_GetAccessURL_Not_Found():
     """
     with pytest.raises(URLNotFound):
         app = Flask(__name__)
-        app.config['FOCA'] = Config(db=MongoConfig(**MONGO_CONFIG))
-        app.config['FOCA'].db.dbs['drsStore']. \
+        app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG))
+        app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client = mongomock.MongoClient().\
             db.collection
         objects = json.loads(open(data_objects_path, "r").read())
         for obj in objects:
-            obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+            obj['_id'] = app.config.foca.db.dbs['drsStore']. \
                 collections['objects'].client.insert_one(obj).inserted_id
         del objects[0]['_id']
         with app.app_context():
@@ -183,13 +191,13 @@ def test_GetAccessURL_Object_Not_Found():
     """
     with pytest.raises(ObjectNotFound):
         app = Flask(__name__)
-        app.config['FOCA'] = Config(db=MongoConfig(**MONGO_CONFIG))
-        app.config['FOCA'].db.dbs['drsStore']. \
+        app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG))
+        app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client = mongomock.MongoClient().\
             db.collection
         objects = json.loads(open(data_objects_path, "r").read())
         for obj in objects:
-            obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+            obj['_id'] = app.config.foca.db.dbs['drsStore']. \
                 collections['objects'].client.insert_one(obj).inserted_id
         del objects[0]['_id']
         with app.app_context():
@@ -201,13 +209,13 @@ def test_GetAccessURL_Key_Error():
     are not there"""
     with pytest.raises(InternalServerError):
         app = Flask(__name__)
-        app.config['FOCA'] = Config(db=MongoConfig(**MONGO_CONFIG))
-        app.config['FOCA'].db.dbs['drsStore']. \
+        app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG))
+        app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client = mongomock.MongoClient().\
             db.collection
         objects = json.loads(open(data_objects_path, "r").read())
         for obj in objects:
-            obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+            obj['_id'] = app.config.foca.db.dbs['drsStore']. \
                 collections['objects'].client.insert_one(obj).inserted_id
         del objects[0]['_id']
         with app.app_context():
@@ -219,13 +227,13 @@ def test_GetAccessURL_Duplicate_Access_Id():
     keys.
     """
     app = Flask(__name__)
-    app.config['FOCA'] = Config(db=MongoConfig(**MONGO_CONFIG))
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG))
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().\
         db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+        obj['_id'] = app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj).inserted_id
     del objects[0]['_id']
     with app.app_context():
@@ -236,13 +244,13 @@ def test_GetAccessURL_Duplicate_Access_Id():
 def test_DeleteObject():
     """DeleteObject should return the id of the deleted object"""
     app = Flask(__name__)
-    app.config['FOCA'] = \
+    app.config.foca = \
         Config(db=MongoConfig(**MONGO_CONFIG), endpoints=ENDPOINT_CONFIG)
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+        obj['_id'] = app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj).inserted_id
     del objects[0]['_id']
     with app.app_context():
@@ -253,13 +261,13 @@ def test_DeleteObject():
 def test_DeleteObject_Not_Found():
     """ObjectNotFound should be raised if object id is not found"""
     app = Flask(__name__)
-    app.config['FOCA'] = \
+    app.config.foca = \
         Config(db=MongoConfig(**MONGO_CONFIG), endpoints=ENDPOINT_CONFIG)
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        obj['_id'] = app.config['FOCA'].db.dbs['drsStore']. \
+        obj['_id'] = app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj).inserted_id
     del objects[0]['_id']
     with app.app_context():
@@ -272,15 +280,15 @@ def test_DeleteAccessMethod():
     with a given `object_id`.
     """
     app = Flask(__name__)
-    app.config['FOCA'] = Config(
+    app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
     )
-    app.config['FOCA'].db.dbs['drsStore'].collections['objects'].client = \
+    app.config.foca.db.dbs['drsStore'].collections['objects'].client = \
         mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        app.config['FOCA'].db.dbs['drsStore']. \
+        app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj)
     with app.app_context():
         res = DeleteAccessMethod.__wrapped__("a011", "2")
@@ -293,11 +301,11 @@ def test_DeleteAccessMethod_ObjectNotFound():
     not available.
     """
     app = Flask(__name__)
-    app.config['FOCA'] = Config(
+    app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
     )
-    app.config['FOCA'].db.dbs['drsStore'].collections['objects'].client = \
+    app.config.foca.db.dbs['drsStore'].collections['objects'].client = \
         mongomock.MongoClient().db.collection
     with app.app_context():
         with pytest.raises(ObjectNotFound):
@@ -310,15 +318,15 @@ def test_DeleteAccessMethod_AccessMethodNotFound():
     identifier is not available.
     """
     app = Flask(__name__)
-    app.config['FOCA'] = Config(
+    app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
     )
-    app.config['FOCA'].db.dbs['drsStore'].collections['objects'].client = \
+    app.config.foca.db.dbs['drsStore'].collections['objects'].client = \
         mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        app.config['FOCA'].db.dbs['drsStore']. \
+        app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj)
     with app.app_context():
         with pytest.raises(AccessMethodNotFound):
@@ -331,15 +339,15 @@ def test_DeleteAcessMethod_BadRequest(monkeypatch):
     access method associated with object.
     """
     app = Flask(__name__)
-    app.config['FOCA'] = Config(
+    app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
     )
-    app.config['FOCA'].db.dbs['drsStore'].collections['objects'].client = \
+    app.config.foca.db.dbs['drsStore'].collections['objects'].client = \
         mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        app.config['FOCA'].db.dbs['drsStore']. \
+        app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj)
     with app.app_context():
         with pytest.raises(BadRequest):
@@ -360,15 +368,15 @@ def test_DeleteAccessMethod_InternalServerError(monkeypatch):
         lambda *args, **kwargs: mock_response
     )
     app = Flask(__name__)
-    app.config['FOCA'] = Config(
+    app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
     )
-    app.config['FOCA'].db.dbs['drsStore'].collections['objects'].client = \
+    app.config.foca.db.dbs['drsStore'].collections['objects'].client = \
         mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
     for obj in objects:
-        app.config['FOCA'].db.dbs['drsStore']. \
+        app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj)
     with app.app_context():
         with pytest.raises(InternalServerError):
@@ -378,9 +386,9 @@ def test_DeleteAccessMethod_InternalServerError(monkeypatch):
 def test_PostObject():
     """Test for creating a new object with an auto-generated identifier."""
     app = Flask(__name__)
-    app.config['FOCA'] = \
+    app.config.foca = \
         Config(db=MongoConfig(**MONGO_CONFIG), endpoints=ENDPOINT_CONFIG)
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
 
     with app.test_request_context(json={"name": "drsObject"}):
@@ -391,9 +399,9 @@ def test_PostObject():
 def test_PutObject():
     """Test for creating a new object with a user-supplied identigier."""
     app = Flask(__name__)
-    app.config['FOCA'] = \
+    app.config.foca = \
         Config(db=MongoConfig(**MONGO_CONFIG), endpoints=ENDPOINT_CONFIG)
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
 
     with app.test_request_context(json={"name": "drsObject"}):
@@ -404,11 +412,11 @@ def test_PutObject():
 def test_PutObject_update():
     """Test for updating an existing object."""
     app = Flask(__name__)
-    app.config['FOCA'] = \
+    app.config.foca = \
         Config(db=MongoConfig(**MONGO_CONFIG), endpoints=ENDPOINT_CONFIG)
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
-    app.config['FOCA'].db.dbs['drsStore']. \
+    app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client.insert_one(MOCK_DATA_OBJECT)
 
     with app.test_request_context(json={"name": "drsObject"}):
@@ -420,14 +428,14 @@ def test_PutObject_update():
 def test_getServiceInfo():
     """Test for getting service info."""
     app = Flask(__name__)
-    app.config['FOCA'] = Config(
+    app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
     )
     mock_resp = deepcopy(SERVICE_INFO_CONFIG)
-    app.config['FOCA'].db.dbs['drsStore'].collections['service_info'] \
+    app.config.foca.db.dbs['drsStore'].collections['service_info'] \
         .client = mongomock.MongoClient().db.collection
-    app.config['FOCA'].db.dbs['drsStore'].collections['service_info'] \
+    app.config.foca.db.dbs['drsStore'].collections['service_info'] \
         .client.insert_one(mock_resp)
 
     with app.app_context():
@@ -435,15 +443,37 @@ def test_getServiceInfo():
         assert res == SERVICE_INFO_CONFIG
 
 
+# GET /service-info
+def test_getServiceInfo_crypt4gh():
+    """Test for getting service info with crypt4gh keydata."""
+    app = Flask(__name__)
+    app.config.foca = Config(
+        db=MongoConfig(**MONGO_CONFIG),
+        endpoints=ENDPOINT_CONFIG,
+        crypt4gh=CRYPT4GH_CONFIG,
+    )
+    mock_resp = deepcopy(SERVICE_INFO_CONFIG)
+    mock_resp.update(SERVICE_INFO_CRYPT4GH_CONFIG)
+    app.config.foca.db.dbs['drsStore'].collections['service_info'] \
+        .client = mongomock.MongoClient().db.collection
+    app.config.foca.db.dbs['drsStore'].collections['service_info'] \
+        .client.insert_one(mock_resp)
+
+    with app.app_context():
+        res = getServiceInfo.__wrapped__()
+        assert res == {**SERVICE_INFO_CONFIG,
+                       **SERVICE_INFO_CRYPT4GH_CONFIG}
+
+
 # POST /service-info
 def test_postServiceInfo():
     """Test for creating service info."""
     app = Flask(__name__)
-    app.config['FOCA'] = Config(
+    app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
     )
-    app.config['FOCA'].db.dbs['drsStore'].collections['service_info'] \
+    app.config.foca.db.dbs['drsStore'].collections['service_info'] \
         .client = mongomock.MongoClient().db.collection
 
     with app.test_request_context(json=deepcopy(SERVICE_INFO_CONFIG)):
