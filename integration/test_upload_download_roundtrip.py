@@ -70,7 +70,7 @@ def test_upload_download_roundtrip():
     _rm("file.txt")
 
     # Download file again
-    cmd = f"drs get -d http://minio:8080 {id_}"
+    cmd = f"drs get --suppress-ssl-verify -d http://minio:8080 {id_}"
     _run_command(cmd)
 
     # Check that contents match
