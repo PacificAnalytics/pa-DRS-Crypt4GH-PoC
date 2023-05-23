@@ -28,7 +28,7 @@ def _run_command(cmd):
     """Run command and return stdout.
     """
     result = subprocess.run(
-        cmd, check=True, shell=True, stdout=subprocess.PIPE, encoding="utf-8")
+        cmd, check=True, shell=True, capture_output=True, encoding="utf-8")
     return result.stdout
 
 
