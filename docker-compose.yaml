@@ -14,14 +14,14 @@ services:
         ports:
             - "8080:8080"
         volumes:
-            - appdata:/app
+            - .:/app
 
     mongodb: 
         image: mongo:3.6
         container_name: pa-mongo-db
         restart: unless-stopped
         volumes:
-            - mongodata:/data/db
+            - ../data/drs/db:/data/db
         ports:
             - "27017:27017"
 
@@ -35,7 +35,7 @@ services:
             - "9090:9090"
         env_file: .env
         volumes:
-            - miniodata:/data
+            - ../data/minio:/data
         command: server /data --console-address ":9090"
 
 
