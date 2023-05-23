@@ -71,7 +71,7 @@ def GetAccessURL(object_id: str, access_id: str) -> Dict:
         # with it.
         client_pubkey = b64decode(request.headers.get("Crypt4Gh-Pubkey"))
         if client_pubkey:
-            crypt4gh_conf = current_app.config['FOCA'].crypt4gh
+            crypt4gh_conf = current_app.config.foca.crypt4gh
             access_urls = [
                 reencrypt_access_url(url, client_pubkey, crypt4gh_conf)
                 for url in access_urls
