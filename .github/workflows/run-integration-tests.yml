@@ -11,6 +11,11 @@ jobs:
       run: cp integration/env.txt .env
     - name: Build and bring up the stack
       run: docker compose up -d
+    - name: Configure Minio
+      run: ./configure-minio.sh
+    - name: Setup minio host mapping
+      run: |
+        sudo echo "127.0.0.1 minio" | sudo tee -a /etc/hosts
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
