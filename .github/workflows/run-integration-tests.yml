@@ -36,6 +36,6 @@ jobs:
         python -m pip install -e uploader/ -v
     - name: Install DRS client
       run: |
-        pip install git+https://github.com/ga4gh/ga4gh-drs-client
+        pip install git+https://AlexanderSenf:${PA_DRS_CRYPT4GH_DOWNLOADER_TOKEN}@github.com/PacificAnalytics/pa-DRS-Crypt4GH-Downloader.git
     - name: Test
       run: python -m pytest integration/
