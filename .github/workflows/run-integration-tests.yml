@@ -37,6 +37,8 @@ jobs:
     - name: Install DRS client
       run: |
         echo "pip install git+https://jvkersch:${INTEGRATION_TEST_TOKEN}@github.com/PacificAnalytics/pa-DRS-Crypt4GH-Downloader.git" > command.txt
+      env:
+        INTEGRATION_TEST_TOKEN: ${{ secrets.INTEGRATION_TEST_TOKEN }}
     - name: Archive code coverage results
       uses: actions/upload-artifact@v3
       with:
