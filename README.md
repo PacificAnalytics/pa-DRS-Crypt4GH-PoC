@@ -46,9 +46,14 @@ docker compose up
 ./configure-minio.sh
 ```
 
+(5) Add an entry to `/etc/hosts` so that the Minio service can be accessed using the `minio` hostname. As root, open the file `/etc/hosts`, and add the following line at the bottom:
+```
+127.0.0.1    minio
+```
+
 The server runs on `localhost:8080` by default. The OpenAPI interface can be
 accessed at
-[http://localhost:8080/ga4gh/drs/v1/ui/](http://localhost:8080/ga4gh/drs/v1/ui/). The Minio dashboad can be found at [http://localhost:9000](http://localhost:9000) and can be accessed using the root user account configured in step (2).
+[http://localhost:8080/ga4gh/drs/v1/ui/](http://localhost:8080/ga4gh/drs/v1/ui/). The Minio dashboad can be found at [http://localhost:9000](http://localhost:9000) and can be accessed using the root user account configured in step (2). After step (5) has been completed, the Minio service can also be accessed at [http://minio:9000](http://minio:9000).
 
 
 ## Local development
