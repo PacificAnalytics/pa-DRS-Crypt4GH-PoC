@@ -9,6 +9,15 @@ from urllib.parse import urljoin
 import requests_mock
 
 
+def datapath(fname):
+    """Return the full path for a testing asset under the tests directory.
+
+    Args:
+        fname (str): File name of an asset, relative to the tests directory.
+    """
+    return pathlib.Path(__file__).parent / fname
+
+
 @contextlib.contextmanager
 def datafile(contents, fname="temp.txt"):
     try:
