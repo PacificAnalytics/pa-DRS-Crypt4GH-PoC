@@ -11,8 +11,8 @@ export $(grep -v '^#' .env | xargs)
 mc alias set local http://127.0.0.1:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD
 
 # Create bucket for anonymous download
-mc mb $BUCKET
-mc anonymous set download $BUCKET
+mc mb local/$BUCKET
+mc anonymous set download local/$BUCKET
 
 # Add local user with Minio upload privileges. Note: if the user already has
 # the upload policy attached, the second command will print an error. This can
