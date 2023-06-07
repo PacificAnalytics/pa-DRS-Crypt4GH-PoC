@@ -74,20 +74,13 @@ def patch_minio():
 
 
 @contextlib.contextmanager
-def patch_drs_filer(base_url):
+def patch_drs_filer(base_url, crypt4gh=True):
     """ Patch REST calls to DRS-filer to return canned response.
     """
+    service_info = SERVICE_INFO_CRYPT4GH if crypt4gh else SERVICE_INFO_PLAIN
     with requests_mock.Mocker() as m:
         m.post(urljoin(base_url, "ga4gh/drs/v1/objects"),
                text="dummy_id")
-        yield m
-
-
-@contextlib.contextmanager
-def patch_service_info(base_url, crypt4gh=True):
-    """Patch REST calls to /service-info to return canned response."""
-    service_info = SERVICE_INFO_CRYPT4GH if crypt4gh else SERVICE_INFO_PLAIN
-    with requests_mock.Mocker() as m:
         m.get(urljoin(base_url, "ga4gh/drs/v1/service-info"),
               json=service_info)
         yield m
