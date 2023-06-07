@@ -1,7 +1,9 @@
 import datetime
 
 from ..drs import DRSClient, DRSMetadata, _create_request_data
-from .testing_utils import datafile, patch_drs_filer
+from .testing_utils import (
+    datafile, patch_drs_filer, patch_service_info, SERVICE_INFO_CRYPT4GH
+)
 
 
 def _is_iso8601(s):
@@ -48,3 +50,10 @@ def test_post_metadata():
         drs_meta = DRSMetadata.from_file(fname)
         response = drs_client.post_metadata(drs_meta)
     assert response == "dummy_id"
+
+
+def test_get_service_info():
+    drs_client = DRSClient("http://drs.url")
+    with patch_service_info("http://drs.url"):
+        service_info = drs_client.get_service_info()
+    assert service_info == SERVICE_INFO_CRYPT4GH
