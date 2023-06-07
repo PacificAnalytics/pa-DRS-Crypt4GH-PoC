@@ -68,7 +68,7 @@ def GetAccessURL(object_id: str, access_id: str) -> Dict:
         ]
 
         # If the client passed along a public key, re-encrypt the object data
-        # with it.
+        # with it. # XXX provide better error handling
         client_pubkey = b64decode(request.headers.get("Crypt4Gh-Pubkey"))
         if client_pubkey:
             crypt4gh_conf = current_app.config.foca.crypt4gh

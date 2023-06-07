@@ -28,10 +28,8 @@ def encrypt(client_seckey, recipient_pubkey, filename, extension=".crypt4gh"):
     filename = Path(filename)
     filename_enc = filename.with_suffix(filename.suffix + extension)
 
-    recipients = [(0, client_seckey, recipient_pubkey)]
     with open(filename, "rb") as fp_in, open(filename_enc, "wb") as fp_out:
-        _encrypt(recipients, fp_in, fp_out, 0, None)
-
+        encrypt2(client_seckey, recipient_pubkey, fp_in, fp_out)
     return filename_enc
 
 
@@ -54,9 +52,8 @@ def reencrypt(owner_seckey, recipient_pubkey, filename, extension=".reenc"):
     filename = Path(filename)
     filename_reenc = filename.with_suffix(filename.suffix + extension)
 
-    recipients = [(0, owner_seckey, recipient_pubkey)]
     with open(filename, "rb") as fp_in, open(filename_reenc, "wb") as fp_out:
-        _reencrypt([(0, owner_seckey, None)], recipients, fp_in, fp_out)
+        reencrypt2(owner_seckey, recipient_pubkey, fp_in, fp_out)
 
     return filename_reenc
 
