@@ -4,6 +4,7 @@ from pathlib import Path
 import shutil
 import tempfile
 from urllib.parse import urlparse
+import uuid
 
 from uploader.store import BucketStore
 from uploader.crypt4gh_wrapper import get_seckey, reencrypt
@@ -57,7 +58,10 @@ def reencrypt_access_url(access_url, client_pubkey, crypt4gh_conf):
         logger.info("Downloaded encrypted resource to %s", resource)
 
         # Reencrypt
-        resource_reenc = reencrypt(server_seckey, client_pubkey, resource)
+        resource_reenc = resource + "-" + str(uuid.uuid4())
+        with open(resource, "rb") as original, \
+             open(resource_reenc, "wb") as reenc:
+            reencrypt(server_seckey, client_pubkey, original, reenc)
         logger.info("Re-encrypted resource to %s", resource_reenc)
 
         # Upload

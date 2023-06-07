@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import click
 
 from .crypt4gh_client import get_server_pubkey
@@ -16,8 +18,7 @@ from .utils import configure_logging
 @click.option("--desc", help="Optional description of the object", default="")
 @click.option("--sk", help="Secret key of the client", required=True)
 def main(filename, drs_url, storage_url, bucket, insecure, desc, sk):
-    """ Upload DRS metatadata and file byte data.
-    """
+    """Upload DRS metatadata and file byte data."""
     configure_logging()
 
     # Encrypt byte data
@@ -25,7 +26,11 @@ def main(filename, drs_url, storage_url, bucket, insecure, desc, sk):
     server_pubkey = get_server_pubkey(drs_client)
     if server_pubkey:  # supports crypt4gh
         client_seckey = get_seckey(sk)
-        filename = encrypt(client_seckey, server_pubkey, filename)
+
+        filename = Path(filename)
+        filename_enc = filename.with_suffix(filename.suffix + ".crypt4gh")
+        with open(filename, "rb") as orig, open(filename_enc, "wb") as enc:
+            encrypt(client_seckey, server_pubkey, orig, enc)
 
     # Upload byte data to storage server
     store_client = BucketStore(
