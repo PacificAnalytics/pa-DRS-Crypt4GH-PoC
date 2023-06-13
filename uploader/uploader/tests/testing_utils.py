@@ -8,6 +8,33 @@ from urllib.parse import urljoin
 
 import requests_mock
 
+SERVICE_INFO_PLAIN = {
+    "contactUrl": "contact/abc",
+    "createdAt": "2020-01-01",
+    "description": "Description of service.",
+    "documentationUrl": "docs/abc",
+    "environment": "ENV",
+    "id": "TEMPID1",
+    "name": "TEMP_STUB",
+    "organization": {
+        "name": "Parent organization",
+        "url": "parent/abc"
+    },
+    "type": {
+        "artifact": "TEMP_ARTIFACT",
+        "group": "TEMP_GROUP",
+        "version": "v1"
+    },
+    "updatedAt": "2020-01-01",
+    "version": "0.0.0"
+}
+SERVICE_INFO_CRYPT4GH = {
+    **SERVICE_INFO_PLAIN,
+    "crypt4gh": {
+            "pubkey": "AmEsb2n0m5mc6aadwpK4sT6zNapqgH+nnysNtpKa2Ag="
+    },
+}
+
 
 def datapath(fname):
     """Return the full path for a testing asset under the tests directory.
@@ -47,10 +74,13 @@ def patch_minio():
 
 
 @contextlib.contextmanager
-def patch_drs_filer(base_url):
+def patch_drs_filer(base_url, crypt4gh=True):
     """ Patch REST calls to DRS-filer to return canned response.
     """
+    service_info = SERVICE_INFO_CRYPT4GH if crypt4gh else SERVICE_INFO_PLAIN
     with requests_mock.Mocker() as m:
         m.post(urljoin(base_url, "ga4gh/drs/v1/objects"),
                text="dummy_id")
+        m.get(urljoin(base_url, "ga4gh/drs/v1/service-info"),
+              json=service_info)
         yield m
