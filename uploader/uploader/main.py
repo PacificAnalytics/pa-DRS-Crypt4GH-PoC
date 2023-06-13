@@ -46,14 +46,16 @@ def main(filename, drs_url, storage_url, bucket, insecure, desc,
 
 def _load_crypt4gh_keys(client, client_sk):
     """Load crypt4gh key data, or bail out if a problem occurred."""
-    server_pubkey = get_server_pubkey(client)
-    if not server_pubkey:
+    try:
+        server_pubkey = get_server_pubkey(client)
+    except Exception:
         raise click.ClickException(
             "Encryption requested but server does not "
             "advertise a Crypt4gh public key.")
 
-    client_seckey = get_seckey(client_sk)
-    if not client_seckey:
+    try:
+        client_seckey = get_seckey(client_sk)
+    except Exception:
         raise click.ClickException(
             f"Could not load client secret key from location: {client_sk}."
             " Specify a valid key with the --client-sk flag.")
