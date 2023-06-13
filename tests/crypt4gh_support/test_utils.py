@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from drs_filer.crypt4gh.utils import create_unique_filename, temp_folder
+from drs_filer.crypt4gh_support.utils import (
+    create_unique_filename, temp_folder
+)
 
 
 def test_temp_folder():

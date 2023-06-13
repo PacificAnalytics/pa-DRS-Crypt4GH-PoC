@@ -15,9 +15,18 @@ logger = logging.getLogger(__name__)
 def _load_store_from_conf(conf):
     # TODO: BucketStore grabs ACCESS_KEY and SECRET_KEY from the
     # environment. This should be changed to pass in these values explicitly.
+    # TODO: Minio is very fussy for what is passed in as the host.
     client = BucketStore(
-        conf["storage_host"], conf["storage_bucket"], secure=False)
+        conf["storage_host"], conf["storage_bucket"],
+        secure=conf["storage_secure"])
     return client
+
+
+def _parse_object_url(url):
+    """Return object ID from object URL."""
+    bucket_object_id = urlparse(url).path
+    object_id = os.path.split(bucket_object_id)[-1]
+    return object_id
 
 
 def _download_to_file(client, object_id, temp_d):
@@ -28,23 +37,18 @@ def _download_to_file(client, object_id, temp_d):
 
 
 def _reencrypt_file(fname, server_seckey, client_pubkey):
-    """Reencrypt file with given server seckey/client pubkey.
-
-    Args:
-        fname: The encrypted file to be reencrypted.
-        server_seckey (bytes): The secret key of the server.
-        requester_pubkey (bytes): The public key of the requester.
-
-    Returns:
-        fname_enc: The filename of the reencrypted file (created in the same
-        directory as the original file).
-
-    """
+    """Reencrypt file with given server seckey/client pubkey."""
     fname_enc = create_unique_filename(fname.parent)
     with open(fname, "rb") as original, open(fname_enc, "wb") as enc:
         reencrypt(server_seckey, client_pubkey, original, enc)
     logger.info("Re-encrypted resource to %s", fname_enc)
     return fname_enc
+
+
+def _upload_file(client, fname):
+    url = client.upload_file(fname)
+    logger.info("Uploaded resource to %s", url)
+    return url
 
 
 def reencrypt_access_url(access_url, client_pubkey, crypt4gh_conf):
@@ -67,20 +71,16 @@ def reencrypt_access_url(access_url, client_pubkey, crypt4gh_conf):
     client = _load_store_from_conf(crypt4gh_conf)
     server_seckey = get_seckey(crypt4gh_conf["seckey_path"])
 
-    bucket_object_id = urlparse(access_url["url"]).path
-    object_id = os.path.split(bucket_object_id)[-1]
+    object_id = _parse_object_url(access_url["url"])
     logger.info("Re-encrypting object ID %s", object_id)
 
     with temp_folder() as temp_d:
-        # Download
+        # Download original file data, reencrypt, and upload again
         resource = _download_to_file(client, object_id, temp_d)
-
-        # Reencrypt
         resource_enc = _reencrypt_file(resource, server_seckey, client_pubkey)
+        url = _upload_file(client, resource_enc)
 
-        # Upload
-        url = client.upload_file(resource_enc)
-        logger.info("Uploaded resource to %s", url)
-
-    access_url["url"] = url
-    return access_url
+    return {  # copy of access_url with modified url entry
+        **access_url,
+        "url": url
+    }

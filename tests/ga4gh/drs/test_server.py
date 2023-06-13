@@ -150,7 +150,7 @@ def test_GetAccessURL():
         obj['_id'] = app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj).inserted_id
     del objects[0]['_id']
-    with app.app_context():
+    with app.test_request_context():
         res = GetAccessURL.__wrapped__("a001", "1")
         expected = {
             "url": "ftp://ftp.ensembl.org/pub/release-96/fasta/homo_sapiens/dna//Homo_sapiens.GRCh38.dna.chromosome.19.fa.gz",   # noqa: E501
@@ -175,7 +175,7 @@ def test_GetAccessURL_Not_Found():
             obj['_id'] = app.config.foca.db.dbs['drsStore']. \
                 collections['objects'].client.insert_one(obj).inserted_id
         del objects[0]['_id']
-        with app.app_context():
+        with app.test_request_context():
             res = GetAccessURL.__wrapped__("a001", "12")
             expected = {
                 "url": "ftp://ftp.ensembl.org/pub/release-96/fasta/homo_sapiens/dna//Homo_sapiens.GRCh38.dna.chromosome.19.fa.gz",   # noqa: E501
