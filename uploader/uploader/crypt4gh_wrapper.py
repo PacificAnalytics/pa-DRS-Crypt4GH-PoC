@@ -1,5 +1,5 @@
 """Convenience wrappers around common crypt4gh functionality."""
-from base64 import b64decode, b64encode
+from base64 import b64encode
 
 from crypt4gh.keys import get_private_key, get_public_key
 from crypt4gh.lib import encrypt as _encrypt, reencrypt as _reencrypt
@@ -73,8 +73,3 @@ def get_pubkey_b64(filepath):
         b64_key (str): Base-64 encoded public key.
     """
     return b64encode(get_pubkey(filepath)).decode("ascii")
-
-
-def get_key_from_bytes(key):
-    """Decode b64-encoded key."""
-    return b64decode(key)

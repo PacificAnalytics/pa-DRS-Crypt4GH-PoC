@@ -1,10 +1,8 @@
 from pathlib import Path
-
 import click
 
 from .crypt4gh_client import get_server_pubkey
 from .crypt4gh_wrapper import encrypt as _encrypt, get_seckey
-
 from .drs import DRSClient, DRSMetadata
 from .store import BucketStore
 from .utils import configure_logging
