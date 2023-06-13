@@ -42,6 +42,28 @@ can be used to retrieve the file and its metadata using the DRS client:
     drs get -d http://localhost:8080 <drs-ID>
 ```
 
+## Encrypting the payload
+
+DRS-uploader can upload the payload prior to uploading it to a Crypt4GH-enabled DRS server. To do this, add the `--encrypt` flag on the command line, and pass in the secret key for the client using the `--client-sk` flag:
+```bash
+drs-uploader \
+    --drs-url http://localhost:8080 \
+    --storage-url localhost:9000 \
+    --bucket mybucket \
+    --insecure \
+    --encrypt \
+    --client-sk client-sk.key \
+    mydata.txt
+```
+Before uploading the payload to the server, the uploader client will fetch the public key of the server, and Crypt4GH-encrypt the payload with the server public key and the client private key. The encrypted payload is then uploaded to the server and registered in DRS-filer.
+
+
+To create a public/private keypair, use the `crypt4gh-keygen` utility:
+```bash
+crypt4gh-keygen --sk client-sk.key --pk client-pk.key
+```
+Make sure to leave the pass phrase for the secret key empty.
+
 ## Running the tests
 
 DRS-uploader uses Pytest as a testing framework. Before running the tests,
