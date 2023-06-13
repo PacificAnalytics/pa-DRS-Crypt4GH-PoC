@@ -43,6 +43,13 @@ class BucketStore:
         return url
 
     def download_file(self, file_id, file_path):
+        """Download file from the store.
+
+        Args:
+            file_id (str) : Object ID (in the store) of the file to download.
+            file_path (str) : Where to store the downloaded file.
+
+        """
         self._client.fget_object(self._bucket, file_id, file_path)
 
 

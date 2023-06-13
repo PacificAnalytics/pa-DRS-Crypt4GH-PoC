@@ -91,6 +91,12 @@ class DRSClient:
         return object_id
 
     def get_service_info(self):
+        """Return service info object.
+
+        Returns:
+            service_info (dict)
+
+        """
         service_info = urljoin(self._drs_url, "ga4gh/drs/v1/service-info")
 
         response = requests.get(service_info)
