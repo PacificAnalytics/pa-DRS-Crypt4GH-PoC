@@ -1,11 +1,13 @@
 """Controllers for DRS endpoints."""
 
+from base64 import b64decode
 import logging
 from typing import (Dict, Tuple)
 
 from flask import (current_app, request)
 from foca.utils.logging import log_traffic
 
+from drs_filer.crypt4gh_support.server import reencrypt_access_url
 from drs_filer.errors.exceptions import (
     AccessMethodNotFound,
     InternalServerError,
@@ -68,6 +70,21 @@ def GetAccessURL(object_id: str, access_id: str) -> Dict:
     # to contain a list of dictionaries wth keys `access_url` and `access_id`
     except KeyError:
         raise InternalServerError
+
+    # If the client passed along a public key, re-encrypt the object data
+    # with it.
+    try:
+        client_pubkey = request.headers.get("Crypt4Gh-Pubkey")
+        if client_pubkey:
+            client_pubkey = b64decode(client_pubkey)
+            crypt4gh_conf = current_app.config.foca.crypt4gh
+            access_urls = [
+                reencrypt_access_url(url, client_pubkey, crypt4gh_conf)
+                for url in access_urls
+            ]
+    except Exception as e:
+        raise InternalServerError from e
+
     if not access_urls:
         raise URLNotFound
     elif len(access_urls) == 1:

@@ -1,7 +1,9 @@
 import mongomock
 import pytest
 
+from base64 import b64encode
 from copy import deepcopy
+from unittest.mock import Mock, patch
 
 from flask import Flask
 from flask import json
@@ -51,6 +53,12 @@ MONGO_CONFIG = {
         'drsStore': DB_CONFIG,
     },
 }
+
+CRYPT4GH = {
+    "pubkey_path": "/app/tests/server-pk.key",
+    "seckey_path": "/app/tests/server-sk.key",
+}
+
 
 SERVICE_INFO_CONFIG = {
     "contactUrl": "mailto:support@example.com",
@@ -159,6 +167,43 @@ def test_GetAccessURL():
             ]
         }
         assert res == expected
+
+
+def test_GetAccessURL_Encrypted():
+    """Test for access URLs pointing to crypt4gh-encrypted data.
+    """
+    def reencrypt_side_effect(access_url, *args):
+        return {
+            **access_url,
+            "url": access_url["url"] + "-reencrypted"
+        }
+
+    mock_reencrypt = Mock(side_effect=reencrypt_side_effect)
+
+    app = Flask(__name__)
+    app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG),
+                             crypt4gh=Config(**CRYPT4GH_CONFIG))
+    app.config.foca.db.dbs['drsStore']. \
+        collections['objects'].client = mongomock.MongoClient().db.collection
+    objects = json.loads(open(data_objects_path, "r").read())
+    for obj in objects:
+        obj['_id'] = app.config.foca.db.dbs['drsStore']. \
+            collections['objects'].client.insert_one(obj).inserted_id
+    del objects[0]['_id']
+    pubkey = b64encode(b"pubkey")
+
+    with app.test_request_context(headers={"Crypt4Gh-Pubkey": pubkey}), \
+         patch("drs_filer.ga4gh.drs.server.reencrypt_access_url",
+               new=mock_reencrypt):
+        res = GetAccessURL.__wrapped__("a001", "1")
+
+    expected = {
+        "url": "ftp://ftp.ensembl.org/pub/release-96/fasta/homo_sapiens/dna//Homo_sapiens.GRCh38.dna.chromosome.19.fa.gz-reencrypted",   # noqa: E501
+        "headers": [
+            "None"
+        ]
+    }
+    assert res == expected
 
 
 def test_GetAccessURL_Not_Found():
