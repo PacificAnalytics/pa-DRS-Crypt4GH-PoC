@@ -27,6 +27,7 @@ from drs_filer.ga4gh.drs.server import (
     postServiceInfo,
     PutObject,
 )
+from drs_filer.crypt4gh_support.config import Crypt4GHConfig
 
 
 MOCK_ID_NA = "unavailable"
@@ -53,12 +54,6 @@ MONGO_CONFIG = {
         'drsStore': DB_CONFIG,
     },
 }
-
-CRYPT4GH = {
-    "pubkey_path": "/app/tests/server-pk.key",
-    "seckey_path": "/app/tests/server-sk.key",
-}
-
 
 SERVICE_INFO_CONFIG = {
     "contactUrl": "mailto:support@example.com",
@@ -103,6 +98,8 @@ ENDPOINT_CONFIG = {
 CRYPT4GH_CONFIG = {
     "pubkey_path": "tests/server-pk.key",
     "seckey_path": "tests/server-sk.key",
+    "storage_host": "http://example.com",
+    "storage_bucket": "mybucket",
 }
 
 data_objects_path = "tests/data_objects.json"
@@ -182,7 +179,7 @@ def test_GetAccessURL_Encrypted():
 
     app = Flask(__name__)
     app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG),
-                             crypt4gh=Config(**CRYPT4GH_CONFIG))
+                             crypt4gh=Crypt4GHConfig(**CRYPT4GH_CONFIG))
     app.config.foca.db.dbs['drsStore']. \
         collections['objects'].client = mongomock.MongoClient().db.collection
     objects = json.loads(open(data_objects_path, "r").read())
@@ -495,7 +492,7 @@ def test_getServiceInfo_crypt4gh():
     app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
-        crypt4gh=CRYPT4GH_CONFIG,
+        crypt4gh=Crypt4GHConfig(**CRYPT4GH_CONFIG),
     )
     mock_resp = deepcopy(SERVICE_INFO_CONFIG)
     mock_resp.update(SERVICE_INFO_CRYPT4GH_CONFIG)

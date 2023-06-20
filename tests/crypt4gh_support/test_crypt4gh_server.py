@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from unittest.mock import Mock, patch, ANY
 
+from drs_filer.crypt4gh_support.config import Crypt4GHConfig
 from drs_filer.crypt4gh_support.utils import temp_folder
 from drs_filer.crypt4gh_support.server import (
     _parse_object_url, _download_to_file, _reencrypt_file, _upload_file,
@@ -72,12 +73,12 @@ def test_reencrypt_access_url(
         "url": "http://my-object-store.com/bucket/orig.txt"
     }
     client_pubkey = b"pubkey"
-    crypt4gh_conf = {
-        "seckey_path": datapath("server-sk.key"),
-        "storage_host": "my-object-store.com",
-        "storage_bucket": "bucket",
-        "storage_secure": False,
-    }
+    crypt4gh_conf = Crypt4GHConfig(
+        pubkey_path=str(datapath("server-pk.key")),
+        seckey_path=str(datapath("server-sk.key")),
+        storage_host="my-object-store.com",
+        storage_bucket="bucket",
+    )
 
     # Configure patchers
     patch_download.return_value = "/a/b/c/orig.txt.enc"

@@ -17,8 +17,8 @@ def _load_store_from_conf(conf):
     # environment. This should be changed to pass in these values explicitly.
     # TODO: Minio is very fussy for what is passed in as the host.
     client = BucketStore(
-        conf["storage_host"], conf["storage_bucket"],
-        secure=conf["storage_secure"])
+        conf.storage_host, conf.storage_bucket,
+        secure=conf.storage_secure)
     return client
 
 
@@ -69,7 +69,7 @@ def reencrypt_access_url(access_url, client_pubkey, crypt4gh_conf):
     # TODO: Not efficient to load these from disk every time a URL needs to be
     # rewritten, perhaps cache on flask context?
     client = _load_store_from_conf(crypt4gh_conf)
-    server_seckey = get_seckey(crypt4gh_conf["seckey_path"])
+    server_seckey = get_seckey(crypt4gh_conf.seckey_path)
 
     object_id = _parse_object_url(access_url["url"])
     logger.info("Re-encrypting object ID %s", object_id)
