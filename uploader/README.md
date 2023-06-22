@@ -64,6 +64,23 @@ crypt4gh-keygen --sk client-sk.key --pk client-pk.key
 ```
 Make sure to leave the pass phrase for the secret key empty.
 
+## Downloading an encrypted file
+
+A third-party client may request a copy of an uploaded file encrypted with their public key. Note that this third-party client may be, and often is, different from the client that originally uploaded the file. To download a re-encrypted file, install the [DRS download client](https://github.com/PacificAnalytics/pa-DRS-Crypt4GH-Downloader) and then follow the steps below.
+
+1. Set an environment variable `CRYPT4GH_PUBKEY` containing the base64-encoded public key of the third-party client. This value may be found from inspecting the public key file. Assuming the third-party client's public key is stored in a file `customer-pk.key`, the environment variable can be set by running
+```bash
+export CRYPT4GH_PUBKEY=$(sed -n '2,2p;3q' customer-pk.key)
+```
+
+2. Download the file by running
+```bash
+drs get -d <STORAGE_URL> <DRS_ID>
+```
+Here, `<STORAGE_URL>` points to the file storage where the file data is located (this is typically the same location as was specified during file upload using the `--storage-url` flag) and `<DRS_ID>` is the ID of the file metadata. This ID is reported by the DRS uploader when the upload is finished.
+
+If all goes well, the re-encrypted data will be present in a directory named after the `<DRS_ID>`. The re-encrypted data can then be decrypted by the third-party client using the `crypt4gh decrypt` utility.
+
 ## Running the tests
 
 DRS-uploader uses Pytest as a testing framework. Before running the tests,

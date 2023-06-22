@@ -1,7 +1,9 @@
 import mongomock
 import pytest
 
+from base64 import b64encode
 from copy import deepcopy
+from unittest.mock import Mock, patch
 
 from flask import Flask
 from flask import json
@@ -25,6 +27,7 @@ from drs_filer.ga4gh.drs.server import (
     postServiceInfo,
     PutObject,
 )
+from drs_filer.crypt4gh_support.config import Crypt4GHConfig
 
 
 MOCK_ID_NA = "unavailable"
@@ -95,6 +98,8 @@ ENDPOINT_CONFIG = {
 CRYPT4GH_CONFIG = {
     "pubkey_path": "tests/server-pk.key",
     "seckey_path": "tests/server-sk.key",
+    "storage_host": "http://example.com",
+    "storage_bucket": "mybucket",
 }
 
 data_objects_path = "tests/data_objects.json"
@@ -150,7 +155,7 @@ def test_GetAccessURL():
         obj['_id'] = app.config.foca.db.dbs['drsStore']. \
             collections['objects'].client.insert_one(obj).inserted_id
     del objects[0]['_id']
-    with app.app_context():
+    with app.test_request_context():
         res = GetAccessURL.__wrapped__("a001", "1")
         expected = {
             "url": "ftp://ftp.ensembl.org/pub/release-96/fasta/homo_sapiens/dna//Homo_sapiens.GRCh38.dna.chromosome.19.fa.gz",   # noqa: E501
@@ -159,6 +164,43 @@ def test_GetAccessURL():
             ]
         }
         assert res == expected
+
+
+def test_GetAccessURL_Encrypted():
+    """Test for access URLs pointing to crypt4gh-encrypted data.
+    """
+    def reencrypt_side_effect(access_url, *args):
+        return {
+            **access_url,
+            "url": access_url["url"] + "-reencrypted"
+        }
+
+    mock_reencrypt = Mock(side_effect=reencrypt_side_effect)
+
+    app = Flask(__name__)
+    app.config.foca = Config(db=MongoConfig(**MONGO_CONFIG),
+                             crypt4gh=Crypt4GHConfig(**CRYPT4GH_CONFIG))
+    app.config.foca.db.dbs['drsStore']. \
+        collections['objects'].client = mongomock.MongoClient().db.collection
+    objects = json.loads(open(data_objects_path, "r").read())
+    for obj in objects:
+        obj['_id'] = app.config.foca.db.dbs['drsStore']. \
+            collections['objects'].client.insert_one(obj).inserted_id
+    del objects[0]['_id']
+    pubkey = b64encode(b"pubkey")
+
+    with app.test_request_context(headers={"Crypt4Gh-Pubkey": pubkey}), \
+         patch("drs_filer.ga4gh.drs.server.reencrypt_access_url",
+               new=mock_reencrypt):
+        res = GetAccessURL.__wrapped__("a001", "1")
+
+    expected = {
+        "url": "ftp://ftp.ensembl.org/pub/release-96/fasta/homo_sapiens/dna//Homo_sapiens.GRCh38.dna.chromosome.19.fa.gz-reencrypted",   # noqa: E501
+        "headers": [
+            "None"
+        ]
+    }
+    assert res == expected
 
 
 def test_GetAccessURL_Not_Found():
@@ -175,7 +217,7 @@ def test_GetAccessURL_Not_Found():
             obj['_id'] = app.config.foca.db.dbs['drsStore']. \
                 collections['objects'].client.insert_one(obj).inserted_id
         del objects[0]['_id']
-        with app.app_context():
+        with app.test_request_context():
             res = GetAccessURL.__wrapped__("a001", "12")
             expected = {
                 "url": "ftp://ftp.ensembl.org/pub/release-96/fasta/homo_sapiens/dna//Homo_sapiens.GRCh38.dna.chromosome.19.fa.gz",   # noqa: E501
@@ -450,7 +492,7 @@ def test_getServiceInfo_crypt4gh():
     app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
-        crypt4gh=CRYPT4GH_CONFIG,
+        crypt4gh=Crypt4GHConfig(**CRYPT4GH_CONFIG),
     )
     mock_resp = deepcopy(SERVICE_INFO_CONFIG)
     mock_resp.update(SERVICE_INFO_CRYPT4GH_CONFIG)

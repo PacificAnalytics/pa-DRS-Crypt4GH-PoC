@@ -11,6 +11,7 @@ from pymongo.errors import DuplicateKeyError
 
 from unittest.mock import MagicMock
 
+from drs_filer.crypt4gh_support.config import Crypt4GHConfig
 from drs_filer.ga4gh.drs.endpoints.service_info import (
     RegisterServiceInfo
 )
@@ -81,6 +82,8 @@ ENDPOINT_CONFIG = {
 CRYPT4GH_CONFIG = {
     "pubkey_path": "tests/server-pk.key",
     "seckey_path": "tests/server-sk.key",
+    "storage_host": "http://example.com",
+    "storage_bucket": "mybucket",
 }
 SERVICE_CONFIG = {
     "url_prefix": "http",
@@ -286,7 +289,7 @@ def test_get_crypt4gh_info():
     app.config.foca = Config(
         db=MongoConfig(**MONGO_CONFIG),
         endpoints=ENDPOINT_CONFIG,
-        crypt4gh=CRYPT4GH_CONFIG,
+        crypt4gh=Crypt4GHConfig(**CRYPT4GH_CONFIG),
     )
     app.config.foca.db.dbs['drsStore'].collections['service_info'] \
         .client = mongomock.MongoClient().db.collection
