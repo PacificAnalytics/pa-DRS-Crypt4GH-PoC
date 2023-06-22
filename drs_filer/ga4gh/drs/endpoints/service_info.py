@@ -152,7 +152,7 @@ class RegisterServiceInfo:
         """
         crypt4gh_conf = getattr(current_app.config.foca, "crypt4gh", None)
         if crypt4gh_conf:
-            pubkey = get_pubkey_b64(crypt4gh_conf["pubkey_path"])
+            pubkey = get_pubkey_b64(crypt4gh_conf.pubkey_path)
             crypt4gh_info = {
                 "crypt4gh": {
                     "pubkey": pubkey,
