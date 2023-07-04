@@ -98,6 +98,22 @@ pytest integration
 
 The integration test suite is automatically run under GitHub actions as well, for every PR.
 
+## Configuring the server
+
+The file `config.yaml` in the `drs_filer` can be used to set various configuration options for the server. The Crypt4GH-related options and some others can also be passed in as environment variables. Currently the following options are supported:
+
+- `PUBKEY_PATH`: The path to the public key used by the server. This must be a file path relative to the container.
+- `SECKEY_PATH`: The path to the public key used by the server. This must be a file path relative to the container.
+- `STORAGE_HOST`: The FQDN of the storage host (e.g. `s3.eu-west-1.amazonaws.com` for AWS or `localhost:9000` for Minio).
+- `STORAGE_BUCKET`: The name of the bucket.
+- `STORAGE_SECURE`: Whether or not to check the TLS certificate of the storage host.
+
+Note that the server must have the following environment variables set as well, as detailed above:
+
+- `ACCESS_KEY`: Access key ID providing access to the storage bucket.
+- `SECRET_KEY`: Secret access key providing access to the storage bucket.
+
+
 ## Contributing
 
 This project is a community effort and lives off your contributions, be it in
