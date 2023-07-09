@@ -1,0 +1,39 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - name: {{ .Values.name }}-app
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: Always
+        env:
+        - name: MONGO_PASSWORD
+          valueFrom: 
+            secretKeyRef:
+              name: {{ .Values.name }}-mongodb-drsstore-drs
+              key: password
+        - name: MONGO_HOST
+          value: pa-drs-crypt4gh-poc-mongodb-svc
+        - name: MONGO_DBNAME
+          value: drsStore
+        - name: MONGO_USERNAME
+          valueFrom: 
+            secretKeyRef:
+              name: {{ .Values.name }}-mongodb-drsstore-drs
+              key: username
+          value: 
+        ports:
+        -  containerPort: {{ .Values.service.port }}
+      imagePullSecrets:
+      - name: dockerhub

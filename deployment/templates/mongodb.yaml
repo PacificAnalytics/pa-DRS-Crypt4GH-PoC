@@ -1,0 +1,28 @@
+---
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: {{ .Values.name }}-mongodb
+spec:
+  members: 1
+  type: ReplicaSet
+  version: "6.0.5"
+  security:
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: drs
+      db: drsStore
+      passwordSecretRef: 
+        name: {{ .Values.name }}-secrets
+        key: MONGOPASS
+      roles:
+        - name: clusterAdmin
+          db: drsStore
+        - name: userAdminAnyDatabase
+          db: drsStore
+        - name: dbAdmin
+          db: drsStore
+      scramCredentialsSecretName: scram
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib

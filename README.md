@@ -28,8 +28,49 @@ pip install -e . -v
 ```bash
 crypt4gh-keygen --sk server-sk.key --pk server-pk.key
 ```
+### Via Docker
+
+1. Build the container 
+```bash
+docker build . -t crypt
+```
+
+2. Run the container
+```bash
+docker run \
+  -e MONGO_DBNAME=drsstore \
+  -e MONGO_HOST=localhost \
+  -e MONGO_USERNAME=admin \
+  -e MONGO_PASSWORD=password123 \
+  -e ACCESS_KEY=123 \
+  -e SECRET_KEY=456 \
+  -e STORAGE_BUCKET=mybucket \
+  -e STORAGE_SECURE=false
+  crypt
+```
 
 ### Via Kubernetes
+
+To deploy into an existing kubernetes cluster, the cluster will require some dependencies to already be installed such as the nginx ingress, cert-manager and mongodb community operator.
+
+1. Ensure docker registry secret exists (you can create the token in via dockerhub):
+```bash
+kubectl create secret docker-registry dockerhub --docker-username=%username% --docker-password=%token%
+```
+
+2. Ensure the mongodb pass exists
+```bash
+kubectl create secret generic pa-drs-crypt4gh-poc-secrets \
+  --from-literal=ACCESS_KEY=password123 \
+  --from-literal=SECRET_KEY=password123
+```
+
+3. Install this helm chart:
+```bash
+cd deployment
+helm 
+helm upgrade -i crypt4gh-poc .
+```
 
 ### Via docker-compose
 

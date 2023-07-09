@@ -1,0 +1,24 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.name }}-ingress
+  annotations:
+    cert-manager.io/issuer: {{ .Values.name }}-issuer
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - api.pacificanalytics.com
+    secretName: {{ .Values.name }}-tls
+  rules:
+  - host: api.pacificanalytics.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.name }}-svc
+            port:
+              number: 8080

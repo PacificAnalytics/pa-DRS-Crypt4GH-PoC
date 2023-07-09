@@ -9,11 +9,21 @@ services:
         restart: unless-stopped
         links: 
             - mongodb
-            - minio
         command: bash -c "cd /app/drs_filer; python app.py"
         ports:
             - "8080:8080"
-        env_file: .env
+        environment: 
+          MONGO_HOST: localhost
+          MONGO_DBNAME: drsStore
+          MONGO_USERNAME: admin
+          MONGO_PASSWORD: password
+          #PUBKEY_PATH: /tmp/pubkey
+          #SECKEY_PATH: /tmp/seckey
+          STORAGE_HOST: s3.au-southeast-1.amazonaws.com
+          STORAGE_BUCKET: mybucket
+          STORAGE_SECURE: true
+          ACCESS_KEY: key
+          SECRET_KEY: secret
         volumes:
             - .:/app
 
@@ -27,26 +37,26 @@ services:
             - "27017:27017"
 
 
-    minio:
-        image: quay.io/minio/minio
-        container_name: pa-minio
-        restart: unless-stopped
-        ports:
-            - "9000:9000"
-            - "9090:9090"
-        env_file: .env
-        volumes:
-            - ../data/minio:/data
-        command: server /data --console-address ":9090"
+              # minio:
+              #     image: quay.io/minio/minio
+              #     container_name: pa-minio
+              #     restart: unless-stopped
+              #     ports:
+              #         - "9000:9000"
+              #         - "9090:9090"
+              #     env_file: .env
+              #     volumes:
+              #         - ../data/minio:/data
+              #     command: server /data --console-address ":9090"
 
 
 
 
-volumes:
-    appdata:
-
-    mongodata:
-
-    miniodata:
+              #volumes:
+              #    appdata:
+              #
+              #    mongodata:
+              #
+              #    miniodata:
 
     

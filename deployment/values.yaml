@@ -1,17 +1,10 @@
-# Default values for drs-filer.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+name: pa-drs-crypt4gh-poc
 
-clusterType: openshift
+image:
+  repository: pacificanalytics/pa-drs-crypt4gh-poc
+  tag: 1.0.2
 
-host_name: drs-filer-test.c03.k8s-popup.csc.fi
+imagePullSecrets: []
 
-drs_filer:
-  image: lvarin/drs-filer:latest
-  appName: drs-filer
-
-apiServer: kubernetes.default.svc:443 # address of k8s API server
-
-mongodb:
-  image: mongo:3.6
-  volumeSize: 1Gi
+service:
+  port: 8080
