@@ -10,6 +10,6 @@ RUN pip install -e . -v \
   && chmod g+w ./drs_filer/api/ \
   && pip install yq
 
-ENTRYPOINT ["python", "./initialize_mongodb.py"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 CMD ["bash", "-c", "cd /app/drs_filer; python app.py"]

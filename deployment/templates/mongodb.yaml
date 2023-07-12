@@ -9,7 +9,8 @@ spec:
   version: "6.0.5"
   security:
     authentication:
-      modes: ["SCRAM"]
+      modes:
+        - SCRAM-SHA-1
   users:
     - name: drs
       db: drsStore
@@ -22,6 +23,8 @@ spec:
         - name: userAdminAnyDatabase
           db: drsStore
         - name: dbAdmin
+          db: drsStore
+        - name: readWrite
           db: drsStore
       scramCredentialsSecretName: scram
   additionalMongodConfig:

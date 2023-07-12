@@ -61,6 +61,7 @@ kubectl create secret docker-registry dockerhub --docker-username=%username% --d
 2. Ensure the mongodb pass exists
 ```bash
 kubectl create secret generic pa-drs-crypt4gh-poc-secrets \
+  --from-literal=MONGOPASS=password123 \
   --from-literal=ACCESS_KEY=password123 \
   --from-literal=SECRET_KEY=password123
 ```
