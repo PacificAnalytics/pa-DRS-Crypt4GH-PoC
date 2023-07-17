@@ -1,62 +1,30 @@
+---
 version: '3.6'
 services:
-
-    drs:
-        container_name: pa-drs
-        build:
-            context: .
-            dockerfile: Dockerfile
-        restart: unless-stopped
-        links: 
-            - mongodb
-        command: bash -c "cd /app/drs_filer; python app.py"
-        ports:
-            - "8080:8080"
-        environment: 
-          MONGO_HOST: localhost
-          MONGO_DBNAME: drsStore
-          MONGO_USERNAME: admin
-          MONGO_PASSWORD: password
-          #PUBKEY_PATH: /tmp/pubkey
-          #SECKEY_PATH: /tmp/seckey
-          STORAGE_HOST: s3.au-southeast-1.amazonaws.com
-          STORAGE_BUCKET: mybucket
-          STORAGE_SECURE: true
-          ACCESS_KEY: key
-          SECRET_KEY: secret
-        volumes:
-            - .:/app
-
-    mongodb: 
-        image: mongo:3.6
-        container_name: pa-mongo-db
-        restart: unless-stopped
-        volumes:
-            - ../data/drs/db:/data/db
-        ports:
-            - "27017:27017"
-
-
-              # minio:
-              #     image: quay.io/minio/minio
-              #     container_name: pa-minio
-              #     restart: unless-stopped
-              #     ports:
-              #         - "9000:9000"
-              #         - "9090:9090"
-              #     env_file: .env
-              #     volumes:
-              #         - ../data/minio:/data
-              #     command: server /data --console-address ":9090"
-
-
-
-
-              #volumes:
-              #    appdata:
-              #
-              #    mongodata:
-              #
-              #    miniodata:
-
-    
+  drs:
+    container_name: pa-drs
+    build:
+      context: .
+    links:
+    - db
+    ports:
+    - "8080:8080"
+    environment:
+      MONGO_HOST: db
+      MONGO_DBNAME: drsStore
+      MONGO_USERNAME: admin
+      MONGO_PASSWORD: password
+      #PUBKEY_PATH: /tmp/pubkey
+      #SECKEY_PATH: /tmp/seckey
+      STORAGE_HOST: s3.au-southeast-1.amazonaws.com
+      STORAGE_BUCKET: mybucket
+      STORAGE_SECURE: true
+      ACCESS_KEY: key
+      SECRET_KEY: secret
+  db:
+    image: mongo:6.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+    - "27017:27017"
