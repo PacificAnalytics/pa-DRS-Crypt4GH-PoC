@@ -10,10 +10,7 @@ services:
     ports:
     - "8080:8080"
     environment:
-      MONGO_HOST: db
-      MONGO_DBNAME: drsStore
-      MONGO_USERNAME: admin
-      MONGO_PASSWORD: password
+      MONGO_URI: "mongodb://admin:password@db:27017/drsStore?authSource=admin"
       #PUBKEY_PATH: /tmp/pubkey
       #SECKEY_PATH: /tmp/seckey
       STORAGE_HOST: s3.au-southeast-1.amazonaws.com
