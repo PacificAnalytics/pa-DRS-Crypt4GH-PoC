@@ -51,6 +51,11 @@ def _promptable_default_option(option, name, **kwds):
     )
 
 
+def _parse_pk_file(fname):
+    with open(fname, "rt", encoding="utf-8") as fp:
+        return fp.readlines()[1]
+
+
 @click.option("-c", "--config", default=DEFAULT_CONFIG_FILE,
               help="Location of the configuration file")
 @click.group()
@@ -108,15 +113,29 @@ def upload(ctx, filename, client_sk):
     subprocess.run(command, check=True)
 
 
+@click.argument("drs-id")
+@click.option("--receiver-pk", help="Public key of the third-party receiver")
 @click.command()
-def get():
+@click.pass_context
+def download(ctx, drs_id, receiver_pk):
     """Get a file from the server."""
-    click.echo("Getting...")
+
+    pkdata = _parse_pk_file(receiver_pk)
+    os.environ["CRYPT4GH_PUBKEY"] = pkdata
+
+    cfg = ctx.obj
+    command = [
+        "drs", "get", "-d",
+        cfg["drs_url"],
+        drs_id
+    ]
+
+    subprocess.run(command, check=True)
 
 
 cli.add_command(configure)
 cli.add_command(upload)
-cli.add_command(get)
+cli.add_command(download)
 
 
 if __name__ == "__main__":
