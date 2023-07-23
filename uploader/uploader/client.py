@@ -1,5 +1,7 @@
 """Easy (unified) access to the upload/download client.
 """
+import os
+import subprocess
 
 import click
 import yaml
@@ -61,24 +63,49 @@ def cli(ctx, config):
 @_promptable_default_option("--storage-url", "storage_url")
 @_promptable_default_option("--bucket", "bucket")
 @_promptable_default_option("--insecure", "insecure", is_flag=True)
+@_promptable_default_option("--access-key", "access_key")
+@_promptable_default_option("--secret-key", "secret_key")
 @click.command()
 @click.pass_context
-def configure(ctx, drs_url, storage_url, bucket, insecure):
+def configure(
+        ctx, drs_url, storage_url, bucket, insecure, access_key, secret_key):
     """Configure the application settings."""
     cfg = ctx.obj
     cfg["drs_url"] = drs_url
     cfg["storage_url"] = storage_url
     cfg["bucket"] = bucket
     cfg["insecure"] = insecure
+    cfg["access_key"] = access_key
+    cfg["secret_key"] = secret_key
 
     cfg.write_to_file()
     click.echo(f"Configuration options written to {cfg.fname}")
 
 
+@click.argument("filename", type=click.Path(exists=True))
+@click.option("--client-sk", help="Secret key of the client")
 @click.command()
-def upload():
+@click.pass_context
+def upload(ctx, filename, client_sk):
     """Upload a file to the server."""
-    click.echo("Uploading...")
+    cfg = ctx.obj
+    command = [
+        "drs-uploader",
+        filename,
+        "--drs-url", cfg["drs_url"],
+        "--storage-url", cfg["storage_url"],
+        "--bucket", cfg["bucket"],
+        "--encrypt",  # always encrypt
+        "--client-sk", client_sk
+    ]
+    if cfg["insecure"]:
+        command += ["--insecure"]
+    os.environ.update({
+        "ACCESS_KEY": cfg["access_key"],
+        "SECRET_KEY": cfg["secret_key"],
+    })
+
+    subprocess.run(command, check=True)
 
 
 @click.command()
