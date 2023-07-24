@@ -21,7 +21,6 @@ setup(
         "crypt4gh",
         "minio",
         "requests",
-        "ga4gh-drs-client @ git+https://github.com/PacificAnalytics/pa-DRS-Crypt4GH-Downloader@06c6e83f5c274100d23c6a383f69f45681c2c473",
     ],
     entry_points={
         'console_scripts': [
