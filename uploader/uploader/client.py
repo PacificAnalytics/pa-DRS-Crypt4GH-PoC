@@ -46,14 +46,16 @@ def _promptable_default_option(option, name, **kwds):
             value = ctx.obj.get(name)
             return value or super().get_default(ctx, *args, **kwds)
 
-    return click.option(
-        option, prompt=True, cls=_OptionDefaultFromConfig, **kwds
-    )
+    kwds = {
+        "prompt": True,
+        **kwds
+    }
+    return click.option(option, cls=_OptionDefaultFromConfig, **kwds)
 
 
 def _parse_pk_file(fname):
     with open(fname, "rt", encoding="utf-8") as fp:
-        return fp.readlines()[1]
+        return fp.readlines()[1].strip()
 
 
 @click.option("-c", "--config", default=DEFAULT_CONFIG_FILE,
@@ -64,12 +66,20 @@ def cli(ctx, config):
     ctx.obj = _ConfigManager.from_file(config)
 
 
-@_promptable_default_option("--drs-url", "drs_url")
-@_promptable_default_option("--storage-url", "storage_url")
-@_promptable_default_option("--bucket", "bucket")
-@_promptable_default_option("--insecure", "insecure", is_flag=True)
-@_promptable_default_option("--access-key", "access_key")
-@_promptable_default_option("--secret-key", "secret_key")
+# Decorators must appear in *reverse* order of how we want the prompts to
+# appear to the user.
+@_promptable_default_option("--secret-key", "secret_key",
+                            prompt="Secret key for storage bucket")
+@_promptable_default_option("--access-key", "access_key",
+                            prompt="Access key (ID) for storage bucket")
+@_promptable_default_option("--insecure", "insecure", is_flag=True,
+                            prompt="Skip verification of TLS certificate?")
+@_promptable_default_option("--bucket", "bucket",
+                            prompt="Storage bucket")
+@_promptable_default_option("--storage-url", "storage_url",
+                            prompt="URL of the storage service (usually s3)")
+@_promptable_default_option("--drs-url", "drs_url",
+                            prompt="URL of the DRS server")
 @click.command()
 @click.pass_context
 def configure(
@@ -88,7 +98,9 @@ def configure(
 
 
 @click.argument("filename", type=click.Path(exists=True))
-@click.option("--client-sk", help="Secret key of the client")
+@click.option("--client-sk",
+              help="Secret key of the client",
+              required=True)
 @click.command()
 @click.pass_context
 def upload(ctx, filename, client_sk):
@@ -114,13 +126,15 @@ def upload(ctx, filename, client_sk):
 
 
 @click.argument("drs-id")
-@click.option("--receiver-pk", help="Public key of the third-party receiver")
+@click.option("--recipient-pk",
+              help="Public key of the third-party recipient",
+              required=True)
 @click.command()
 @click.pass_context
-def download(ctx, drs_id, receiver_pk):
+def download(ctx, drs_id, recipient_pk):
     """Get a file from the server."""
 
-    pkdata = _parse_pk_file(receiver_pk)
+    pkdata = _parse_pk_file(recipient_pk)
     os.environ["CRYPT4GH_PUBKEY"] = pkdata
 
     cfg = ctx.obj
