@@ -24,7 +24,8 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'drs-uploader=uploader.main:main'
+            'drs-uploader=uploader.main:main',
+            'drs-client=uploader.client:cli',
         ],
     }
 )
