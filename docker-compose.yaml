@@ -1,52 +1,33 @@
+---
 version: '3.6'
 services:
-
-    drs:
-        container_name: pa-drs
-        build:
-            context: .
-            dockerfile: Dockerfile
-        restart: unless-stopped
-        links: 
-            - mongodb
-            - minio
-        command: bash -c "cd /app/drs_filer; python app.py"
-        ports:
-            - "8080:8080"
-        env_file: .env
-        volumes:
-            - .:/app
-
-    mongodb: 
-        image: mongo:3.6
-        container_name: pa-mongo-db
-        restart: unless-stopped
-        volumes:
-            - ../data/drs/db:/data/db
-        ports:
-            - "27017:27017"
-
-
-    minio:
-        image: quay.io/minio/minio
-        container_name: pa-minio
-        restart: unless-stopped
-        ports:
-            - "9000:9000"
-            - "9090:9090"
-        env_file: .env
-        volumes:
-            - ../data/minio:/data
-        command: server /data --console-address ":9090"
-
-
-
-
-volumes:
-    appdata:
-
-    mongodata:
-
-    miniodata:
-
-    
+  drs:
+    container_name: pa-drs
+    build:
+      context: .
+    links:
+    - db
+    ports:
+    - "8080:8080"
+    environment:
+      MONGO_URI: "mongodb://admin:password@db:27017/drsStore?authSource=admin"
+      SEC_KEY: |
+        -----BEGIN CRYPT4GH PRIVATE KEY-----
+        YzRnaC12MQAEbm9uZQAEbm9uZQAg5eYgf1QUl1cFyquP6OgMz2faF2uSc4s8OXf0L4MLRQM=
+        -----END CRYPT4GH PRIVATE KEY-----
+      PUB_KEY: |
+        -----BEGIN CRYPT4GH PUBLIC KEY-----
+        dq/9iq2WMYpYQqnxVpfd0pwRp2PToAccVWldr+kynCI=
+        -----END CRYPT4GH PUBLIC KEY-----
+      STORAGE_HOST: s3.au-southeast-1.amazonaws.com
+      STORAGE_BUCKET: mybucket
+      STORAGE_SECURE: true
+      ACCESS_KEY: key
+      SECRET_KEY: secret
+  db:
+    image: mongo:6.0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+    - "27017:27017"

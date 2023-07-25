@@ -28,8 +28,52 @@ pip install -e . -v
 ```bash
 crypt4gh-keygen --sk server-sk.key --pk server-pk.key
 ```
+### Via Docker
+
+1. Build the container 
+```bash
+docker build . -t crypt
+```
+
+2. Run the container
+```bash
+docker run \
+  -e MONGO_DBNAME=drsstore \
+  -e MONGO_HOST=localhost \
+  -e MONGO_USERNAME=admin \
+  -e MONGO_PASSWORD=password123 \
+  -e ACCESS_KEY=123 \
+  -e SECRET_KEY=456 \
+  -e STORAGE_BUCKET=mybucket \
+  -e STORAGE_SECURE=false
+  crypt
+```
 
 ### Via Kubernetes
+
+To deploy into an existing kubernetes cluster, the cluster will require some dependencies to already be installed such as the nginx ingress, cert-manager and mongodb community operator.
+
+1. Ensure docker registry secret exists (you can create the token in via dockerhub):
+```bash
+kubectl create secret docker-registry dockerhub --docker-username=%username% --docker-password=%token%
+```
+
+2. Ensure the mongodb pass exists (replace with real values)
+```bash
+kubectl create secret generic pa-drs-crypt4gh-poc-secrets \
+  --from-literal=MONGOPASS=password123 \
+  --from-literal=ACCESS_KEY=AKIAZYFZ72ZYX77UZHWS \
+  --from-literal=SECRET_KEY=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 \
+  --from-literal=STORAGE_BUCKET=staging-pa-drs-crypt4gh-poc \
+  --from-literal=STORAGE_HOST=s3.au-southeast-1.amazonaws.com \
+  --from-file=PUBKEY=key.pub \
+  --from-file=SECKEY=key
+```
+
+3. Install this helm chart:
+```bash
+helm upgrade -i crypt4gh-poc deployment
+```
 
 ### Via docker-compose
 
