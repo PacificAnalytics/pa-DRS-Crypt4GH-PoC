@@ -1,5 +1,7 @@
 """Unit tests for `RegisterService()` controller."""
 
+import os
+
 import mongomock
 import pytest
 import string  # noqa: F401
@@ -9,7 +11,7 @@ from flask import Flask
 from foca.models.config import Config, MongoConfig
 from pymongo.errors import DuplicateKeyError
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from drs_filer.crypt4gh_support.config import Crypt4GHConfig
 from drs_filer.ga4gh.drs.endpoints.service_info import (
@@ -19,6 +21,8 @@ from drs_filer.errors.exceptions import (
     NotFound,
     ValidationError,
 )
+from uploader.tests.testing_utils import datapath
+
 
 INDEX_CONFIG = {
     'keys': [('id', 1)]
@@ -80,8 +84,6 @@ ENDPOINT_CONFIG = {
     "api_path": "ga4gh/drs/v1"
 }
 CRYPT4GH_CONFIG = {
-    "pubkey_path": "tests/server-pk.key",
-    "seckey_path": "tests/server-sk.key",
     "storage_host": "http://example.com",
     "storage_bucket": "mybucket",
 }
@@ -284,6 +286,14 @@ def test__get_headers():
         assert headers == HEADERS_SERVICE_INFO
 
 
+def _patch_env():
+    with open(datapath("server-pk.key"), "rt", encoding="utf-8") as fp:
+        pub_key = fp.read()
+    return patch.dict(
+        os.environ, {"PUB_KEY": pub_key})
+
+
+@_patch_env()
 def test_get_crypt4gh_info():
     app = Flask(__name__)
     app.config.foca = Config(

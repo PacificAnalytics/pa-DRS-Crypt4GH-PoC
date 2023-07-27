@@ -5,9 +5,9 @@ import os
 from urllib.parse import urlparse
 
 from uploader.store import BucketStore
-from uploader.crypt4gh_wrapper import get_seckey, reencrypt
+from uploader.crypt4gh_wrapper import reencrypt
 
-from .utils import create_unique_filename, temp_folder
+from .utils import create_unique_filename, temp_folder, get_seckey_from_env
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ def reencrypt_access_url(access_url, client_pubkey, crypt4gh_conf):
     # TODO: Not efficient to load these from disk every time a URL needs to be
     # rewritten, perhaps cache on flask context?
     client = _load_store_from_conf(crypt4gh_conf)
-    server_seckey = get_seckey(crypt4gh_conf.seckey_path)
+    server_seckey = get_seckey_from_env()
 
     object_id = _parse_object_url(access_url["url"])
     logger.info("Re-encrypting object ID %s", object_id)

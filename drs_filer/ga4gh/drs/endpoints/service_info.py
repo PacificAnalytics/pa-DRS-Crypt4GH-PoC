@@ -9,7 +9,7 @@ from drs_filer.errors.exceptions import (
     NotFound,
     ValidationError,
 )
-from uploader.crypt4gh_wrapper import get_pubkey_b64
+from drs_filer.crypt4gh_support.utils import get_pubkey_b64_from_env
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +152,7 @@ class RegisterServiceInfo:
         """
         crypt4gh_conf = getattr(current_app.config.foca, "crypt4gh", None)
         if crypt4gh_conf:
-            pubkey = get_pubkey_b64(crypt4gh_conf.pubkey_path)
+            pubkey = get_pubkey_b64_from_env()
             crypt4gh_info = {
                 "crypt4gh": {
                     "pubkey": pubkey,
