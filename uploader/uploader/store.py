@@ -1,3 +1,5 @@
+"""S3-backed file storage."""
+
 import logging
 import os
 from urllib.parse import urlparse, urlunparse
@@ -8,28 +10,30 @@ logger = logging.getLogger(__name__)
 
 
 class BucketStore:
-    """ File store using an S3 or Minio bucket.
-    """
+    """File store using an S3 or Minio bucket."""
 
     def __init__(self, endpoint, bucket, secure=True):
+        """Create new BucketStore instance.
+
+        Args:
+            endpoint: The hostname and port of the storage server.
+            bucket: The name of the bucket to use.
+            secure: Whether to check the TLS certificate of the server.
+
+        """
         self._client = _configure_client(endpoint, secure)
         self._bucket = bucket
 
     def upload_file(self, file_path, name=None):
-        """ Upload a file to the store.
+        """Upload a file to the store.
 
-        Parameters
-        ----------
-        file_path : str
-            File path to upload.
-        name : str, optional
-            Optionally, a name under which to register the file. If not set,
-            defaults to the file name.
+        Args:
+            file_path (str): File path to upload.
+            name (str, optional): Optionally, a name under which to register
+                the file. If not set, defaults to the file name.
 
-        Returns
-        -------
-        url : str
-            A URL that can be used to retrieve the file from the storage.
+        Returns:
+            url (str): A URL that can be used to retrieve the file from storage
 
         """
         name = name or os.path.basename(file_path)
@@ -46,8 +50,8 @@ class BucketStore:
         """Download file from the store.
 
         Args:
-            file_id (str) : Object ID (in the store) of the file to download.
-            file_path (str) : Where to store the downloaded file.
+            file_id (str): Object ID (in the store) of the file to download.
+            file_path (str): Where to store the downloaded file.
 
         """
         self._client.fget_object(self._bucket, file_id, file_path)
