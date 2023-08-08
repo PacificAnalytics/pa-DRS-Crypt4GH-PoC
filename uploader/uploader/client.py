@@ -72,8 +72,6 @@ def cli(ctx, config):
                             prompt="Secret key for storage bucket")
 @_promptable_default_option("--access-key", "access_key",
                             prompt="Access key (ID) for storage bucket")
-@_promptable_default_option("--insecure", "insecure", is_flag=True,
-                            prompt="Skip verification of TLS certificate?")
 @_promptable_default_option("--bucket", "bucket",
                             prompt="Storage bucket")
 @_promptable_default_option("--storage-url", "storage_url",
@@ -82,14 +80,12 @@ def cli(ctx, config):
                             prompt="URL of the DRS server")
 @click.command()
 @click.pass_context
-def configure(
-        ctx, drs_url, storage_url, bucket, insecure, access_key, secret_key):
+def configure(ctx, drs_url, storage_url, bucket, access_key, secret_key):
     """Configure the application settings."""
     cfg = ctx.obj
     cfg["drs_url"] = drs_url
     cfg["storage_url"] = storage_url
     cfg["bucket"] = bucket
-    cfg["insecure"] = insecure
     cfg["access_key"] = access_key
     cfg["secret_key"] = secret_key
 
@@ -115,8 +111,7 @@ def upload(ctx, filename, client_sk):
         "--encrypt",  # always encrypt
         "--client-sk", client_sk
     ]
-    if cfg["insecure"]:
-        command += ["--insecure"]
+
     os.environ.update({
         "ACCESS_KEY": cfg["access_key"],
         "SECRET_KEY": cfg["secret_key"],

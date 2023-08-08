@@ -27,7 +27,6 @@ def test_main(cli_runner):
                 "--drs-url", "http://drs.url",
                 "--storage-url", "http://storage.url",
                 "--bucket", "some-bucket",
-                "--insecure",
                 "--desc", "integration test object",
                 str(path)
             ])
@@ -63,7 +62,6 @@ def test_main_encrypted(cli_runner):
                 "--drs-url", "http://drs.url",
                 "--storage-url", "http://storage.url",
                 "--bucket", "some-bucket",
-                "--insecure",
                 "--desc", "integration test object",
                 "--encrypt",
                 "--client-sk", datapath("client-sk.key"),

@@ -13,12 +13,10 @@ from .utils import configure_logging
 @click.option("--drs-url", help="DRS-filer base URL", required=True)
 @click.option("--storage-url", help="Storage backend", required=True)
 @click.option("--bucket", help="Storage bucket", required=True)
-@click.option("--insecure", help="Connect to storage insecurely", is_flag=True)
 @click.option("--desc", help="Optional description of the object", default="")
 @click.option("--encrypt", help="Encrypt file prior to upload", is_flag=True)
 @click.option("--client-sk", help="Secret key of the client")
-def main(filename, drs_url, storage_url, bucket, insecure, desc,
-         encrypt, client_sk):
+def main(filename, drs_url, storage_url, bucket, desc, encrypt, client_sk):
     """ Upload DRS metatadata and file byte data.
     """
     configure_logging()
