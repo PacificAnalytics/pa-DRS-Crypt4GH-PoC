@@ -1,18 +1,25 @@
+from unittest.mock import patch
+
 import click
 import pytest
 
 from ..crypt4gh_wrapper import get_pubkey, get_seckey
 from ..drs import DRSClient
 from ..main import main, _load_crypt4gh_keys
+from ..store import BucketStore
 
-from .testing_utils import datafile, datapath, patch_drs_filer, patch_minio
+from .testing_utils import datafile, datapath, patch_drs_filer
 
 
 def test_main(cli_runner):
 
-    with patch_minio() as minio_client, \
+    with patch("uploader.main.BucketStore", spec=BucketStore) as store_cls, \
          patch_drs_filer("http://drs.url") as drs_client, \
          datafile("foo") as path:
+
+        # GIVEN
+        store = store_cls.return_value
+        store.upload_file.return_value = "http://example.com/myfile"
 
         # WHEN
         result = cli_runner.invoke(
@@ -29,10 +36,9 @@ def test_main(cli_runner):
         assert result.exit_code == 0
 
         # THEN, (b) check that bytes were uploaded
-        minio_client.put_object.assert_called_once()
-        call_args = minio_client.put_object.call_args
-        assert call_args[0][0] == "some-bucket"
-        assert call_args[0][1] == "temp.txt"
+        store.upload_file.assert_called_once()
+        call_args = store.upload_file.call_args[0]
+        assert call_args[0].endswith("temp.txt")
 
         # THEN, (c) check that metadata was registered
         assert drs_client.call_count == 1
@@ -43,9 +49,13 @@ def test_main(cli_runner):
 
 def test_main_encrypted(cli_runner):
 
-    with patch_minio() as minio_client, \
+    with patch("uploader.main.BucketStore", spec=BucketStore) as store_cls, \
          patch_drs_filer("http://drs.url", crypt4gh=True), \
          datafile("foo") as path:
+
+        # GIVEN
+        store = store_cls.return_value
+        store.upload_file.return_value = "http://example.com/myfile"
 
         # WHEN
         result = cli_runner.invoke(
@@ -64,10 +74,9 @@ def test_main_encrypted(cli_runner):
         assert result.exit_code == 0
 
         # THEN, (b) check that bytes were uploaded
-        minio_client.put_object.assert_called_once()
-        call_args = minio_client.put_object.call_args
-        assert call_args[0][0] == "some-bucket"
-        assert call_args[0][1] == "temp.txt.crypt4gh"
+        store.upload_file.assert_called_once()
+        call_args = store.upload_file.call_args[0]
+        assert call_args[0].endswith("temp.txt.crypt4gh")
 
 
 def test_load_crypt4gh_keys_no_server_crypt4gh():

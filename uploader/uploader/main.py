@@ -69,7 +69,7 @@ def _encrypt_crypt4gh_file(filename, client_seckey, server_pubkey):
     filename_enc = filename.with_suffix(filename.suffix + ".crypt4gh")
     with open(filename, "rb") as orig, open(filename_enc, "wb") as enc:
         _encrypt(client_seckey, server_pubkey, orig, enc)
-    return filename_enc
+    return str(filename_enc)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,24 @@
+import contextlib
+import os
+from unittest.mock import patch
+
 from ..store import BucketStore
-from .testing_utils import datafile, patch_minio
+from .testing_utils import datafile
+
+
+@contextlib.contextmanager
+def patch_minio():
+    """Patch Minio client to return canned response."""
+
+    patch_env = patch.dict(
+        os.environ, {"ACCESS_KEY": "accesskey",
+                     "SECRET_KEY": "secretkey"})
+    with patch_env, patch("uploader.store.Minio") as cls:
+        instance = cls.return_value
+        instance.presigned_get_object.return_value = \
+            "http://upload-host/bucket/file.txt?ExpiresIn=3600"
+
+        yield instance
 
 
 def test_upload_file():
