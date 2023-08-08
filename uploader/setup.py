@@ -18,8 +18,8 @@ setup(
     ],
     packages=find_packages(),
     install_requires=[
+        "boto3",
         "crypt4gh",
-        "minio",
         "requests",
     ],
     entry_points={

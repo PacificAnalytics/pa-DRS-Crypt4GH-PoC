@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 def _load_store_from_conf(conf):
     # TODO: BucketStore grabs ACCESS_KEY and SECRET_KEY from the
     # environment. This should be changed to pass in these values explicitly.
-    # TODO: Minio is very fussy for what is passed in as the host.
     client = BucketStore(
-        conf.storage_host, conf.storage_bucket,
-        secure=conf.storage_secure)
+        conf.storage_bucket,
+        endpoint=conf.storage_host
+    )
     return client
 
 

@@ -4,7 +4,9 @@ import logging
 import os
 from urllib.parse import urlparse, urlunparse
 
-from minio import Minio
+import botocore
+import boto3
+
 
 logger = logging.getLogger(__name__)
 
@@ -12,16 +14,15 @@ logger = logging.getLogger(__name__)
 class BucketStore:
     """File store using an S3 or Minio bucket."""
 
-    def __init__(self, endpoint, bucket, secure=True):
+    def __init__(self, bucket, endpoint=None):
         """Create new BucketStore instance.
 
         Args:
-            endpoint: The hostname and port of the storage server.
             bucket: The name of the bucket to use.
-            secure: Whether to check the TLS certificate of the server.
+            endpoint (optional): The hostname and port of the storage server.
 
         """
-        self._client = _configure_client(endpoint, secure)
+        self._client = _configure_client(endpoint)
         self._bucket = bucket
 
     def upload_file(self, file_path, name=None):
@@ -37,10 +38,10 @@ class BucketStore:
 
         """
         name = name or os.path.basename(file_path)
-        with open(file_path, 'rb') as fp:
-            logger.debug("Uploading file %s", file_path)
-            self._client.put_object(
-                self._bucket, name, fp, os.stat(file_path).st_size)
+
+        logger.debug("Uploading file %s", file_path)
+        self._client.upload_file(file_path, self._bucket, name)
+        logger.debug("Upload finished for file %s", file_path)
 
         url = _url_for_object(self._client, self._bucket, name)
         logger.debug("Finished file upload. URL: %s", url)
@@ -54,19 +55,31 @@ class BucketStore:
             file_path (str): Where to store the downloaded file.
 
         """
-        self._client.fget_object(self._bucket, file_id, file_path)
+        self._client.download_file(self._bucket, file_id, file_path)
 
 
-def _configure_client(endpoint, secure=True):
-    client = Minio(endpoint,
-                   access_key=os.environ["ACCESS_KEY"],
-                   secret_key=os.environ["SECRET_KEY"],
-                   secure=secure)
+def _configure_client(endpoint):
+    session = boto3.Session(
+        aws_access_key_id=os.environ["ACCESS_KEY"],
+        aws_secret_access_key=os.environ["SECRET_KEY"],
+    )
+
+    client = session.client(
+        "s3",
+        endpoint_url=endpoint,
+    )
+
+    # Allow for easy creation of URLs to bucket objects.
+    config = client._client_config
+    config.signature_version = botocore.UNSIGNED
+
     return client
 
 
 def _url_for_object(client, bucket, name):
-    url = client.presigned_get_object(bucket, name)
+    url = client.generate_presigned_url(
+        "get_object", ExpiresIn=0, Params={'Bucket': bucket, 'Key': name}
+    )
     return _remove_query_string(url)
 
 
