@@ -32,8 +32,7 @@ def main(filename, drs_url, storage_url, bucket, insecure, desc,
             filename, client_seckey, server_pubkey)
 
     # Upload byte data to storage server
-    store_client = BucketStore(
-        storage_url, bucket, secure=not insecure)
+    store_client = BucketStore(bucket, endpoint=storage_url)
     resource_url = store_client.upload_file(filename)
 
     # Upload metadata to DRS-filer
