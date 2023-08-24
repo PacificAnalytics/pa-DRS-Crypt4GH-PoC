@@ -98,9 +98,13 @@ def presign_access_url(access_url, crypt4gh_conf):
         URL providing access to the data.
 
     """
+    url = access_url["url"]
+    if not url.startswith("s3"):
+        return access_url  # do nothing
+
     client = _load_store_from_conf(crypt4gh_conf)
 
-    object_id = _parse_object_url(access_url["url"])
+    object_id = _parse_object_url(url)
     logger.info("Generating presigned URL for object ID %s", object_id)
     url = client.generate_presigned_url(object_id)
 

@@ -78,16 +78,15 @@ def GetAccessURL(object_id: str, access_id: str) -> Dict:
     # with it.
     try:
         client_pubkey = request.headers.get("Crypt4Gh-Pubkey")
+        crypt4gh_conf = getattr(current_app.config.foca, "crypt4gh", None)
         if client_pubkey:
             client_pubkey = b64decode(client_pubkey)
-            crypt4gh_conf = current_app.config.foca.crypt4gh
             access_urls = [
                 reencrypt_access_url(url, client_pubkey, crypt4gh_conf)
                 for url in access_urls
             ]
         else:
             # Issue a signed URL to the original payload.
-            crypt4gh_conf = current_app.config.foca.crypt4gh
             access_urls = [
                 presign_access_url(url, crypt4gh_conf)
                 for url in access_urls
