@@ -22,7 +22,7 @@ def test_upload_file():
 
         obj_url = store.upload_file(path, "file.txt")
 
-        assert obj_url == "http://example.com/myfile.txt"
+        assert obj_url == "http://example.com/myfile.txt?Expiry=3600"
         client.upload_file.assert_called_once_with(
             path, "bucket", "file.txt",
         )
