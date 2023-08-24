@@ -43,7 +43,7 @@ class BucketStore:
         self._client.upload_file(file_path, self._bucket, name)
         logger.debug("Upload finished for file %s", file_path)
 
-        url = _url_for_object(self._client, self._bucket, name)
+        url = self.generate_presigned_url(name)
         logger.debug("Finished file upload. URL: %s", url)
         return url
 
@@ -56,6 +56,16 @@ class BucketStore:
 
         """
         self._client.download_file(self._bucket, file_id, file_path)
+
+    def generate_presigned_url(self, name):
+        """Generate presigned URL for bucket object.
+        """
+        url = self._client.generate_presigned_url(
+            "get_object",
+            ExpiresIn=3600,
+            Params={'Bucket': self._bucket, 'Key': name},
+        )
+        return url
 
 
 def _configure_client(endpoint):
@@ -74,13 +84,6 @@ def _configure_client(endpoint):
     config.signature_version = botocore.UNSIGNED
 
     return client
-
-
-def _url_for_object(client, bucket, name):
-    url = client.generate_presigned_url(
-        "get_object", ExpiresIn=3600, Params={'Bucket': bucket, 'Key': name}
-    )
-    return url
 
 
 def _remove_query_string(url):

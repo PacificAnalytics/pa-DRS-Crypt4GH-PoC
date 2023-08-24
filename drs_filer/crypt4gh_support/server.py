@@ -84,3 +84,27 @@ def reencrypt_access_url(access_url, client_pubkey, crypt4gh_conf):
         **access_url,
         "url": url
     }
+
+
+def presign_access_url(access_url, crypt4gh_conf):
+    """Generate presigned URL for given access URL data.
+
+    Args:
+        access_url: Current access URL data. The "url" key points to the file.
+        crypt4gh_conf: Crypt4gh-specific configuration.
+
+    Returns:
+        updated_access_url: Updated access URL data. The "url" key is a signed
+        URL providing access to the data.
+
+    """
+    client = _load_store_from_conf(crypt4gh_conf)
+
+    object_id = _parse_object_url(access_url["url"])
+    logger.info("Generating presigned URL for object ID %s", object_id)
+    url = client.generate_presigned_url(object_id)
+
+    return {  # copy of access_url with modified url entry
+        **access_url,
+        "url": url
+    }
