@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 def _load_store_from_conf(conf):
     # TODO: BucketStore grabs ACCESS_KEY and SECRET_KEY from the
     # environment. This should be changed to pass in these values explicitly.
-    # TODO: Minio is very fussy for what is passed in as the host.
     client = BucketStore(
-        conf.storage_host, conf.storage_bucket,
-        secure=conf.storage_secure)
+        conf.storage_bucket,
+        endpoint=conf.storage_host
+    )
     return client
 
 
@@ -79,6 +79,34 @@ def reencrypt_access_url(access_url, client_pubkey, crypt4gh_conf):
         resource = _download_to_file(client, object_id, temp_d)
         resource_enc = _reencrypt_file(resource, server_seckey, client_pubkey)
         url = _upload_file(client, resource_enc)
+
+    return {  # copy of access_url with modified url entry
+        **access_url,
+        "url": url
+    }
+
+
+def presign_access_url(access_url, crypt4gh_conf):
+    """Generate presigned URL for given access URL data.
+
+    Args:
+        access_url: Current access URL data. The "url" key points to the file.
+        crypt4gh_conf: Crypt4gh-specific configuration.
+
+    Returns:
+        updated_access_url: Updated access URL data. The "url" key is a signed
+        URL providing access to the data.
+
+    """
+    url = access_url["url"]
+    if not url.startswith("s3"):
+        return access_url  # do nothing
+
+    client = _load_store_from_conf(crypt4gh_conf)
+
+    object_id = _parse_object_url(url)
+    logger.info("Generating presigned URL for object ID %s", object_id)
+    url = client.generate_presigned_url(object_id)
 
     return {  # copy of access_url with modified url entry
         **access_url,

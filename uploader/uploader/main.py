@@ -1,4 +1,6 @@
 from pathlib import Path
+import os
+
 import click
 
 from .crypt4gh_client import get_server_pubkey
@@ -13,12 +15,10 @@ from .utils import configure_logging
 @click.option("--drs-url", help="DRS-filer base URL", required=True)
 @click.option("--storage-url", help="Storage backend", required=True)
 @click.option("--bucket", help="Storage bucket", required=True)
-@click.option("--insecure", help="Connect to storage insecurely", is_flag=True)
 @click.option("--desc", help="Optional description of the object", default="")
 @click.option("--encrypt", help="Encrypt file prior to upload", is_flag=True)
 @click.option("--client-sk", help="Secret key of the client")
-def main(filename, drs_url, storage_url, bucket, insecure, desc,
-         encrypt, client_sk):
+def main(filename, drs_url, storage_url, bucket, desc, encrypt, client_sk):
     """ Upload DRS metatadata and file byte data.
     """
     configure_logging()
@@ -32,9 +32,10 @@ def main(filename, drs_url, storage_url, bucket, insecure, desc,
             filename, client_seckey, server_pubkey)
 
     # Upload byte data to storage server
-    store_client = BucketStore(
-        storage_url, bucket, secure=not insecure)
-    resource_url = store_client.upload_file(filename)
+    store_client = BucketStore(bucket, endpoint=storage_url)
+    store_client.upload_file(filename)
+    resource_url = _create_s3_resource_url(
+        bucket, os.path.basename(filename))
 
     # Upload metadata to DRS-filer
     metadata = DRSMetadata.from_file(
@@ -63,13 +64,17 @@ def _load_crypt4gh_keys(client, client_sk):
     return server_pubkey, client_seckey
 
 
+def _create_s3_resource_url(bucket, filename):
+    return f"s3://{bucket}/{filename}"
+
+
 def _encrypt_crypt4gh_file(filename, client_seckey, server_pubkey):
     """Encrypt file with given server/client keys."""
     filename = Path(filename)
     filename_enc = filename.with_suffix(filename.suffix + ".crypt4gh")
     with open(filename, "rb") as orig, open(filename_enc, "wb") as enc:
         _encrypt(client_seckey, server_pubkey, orig, enc)
-    return filename_enc
+    return str(filename_enc)
 
 
 if __name__ == "__main__":

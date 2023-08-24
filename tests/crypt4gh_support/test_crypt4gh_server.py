@@ -76,7 +76,7 @@ def test_reencrypt_access_url(
     crypt4gh_conf = Crypt4GHConfig(
         pubkey_path=str(datapath("server-pk.key")),
         seckey_path=str(datapath("server-sk.key")),
-        storage_host="my-object-store.com",
+        storage_host="http://my-object-store.com",
         storage_bucket="bucket",
     )
 

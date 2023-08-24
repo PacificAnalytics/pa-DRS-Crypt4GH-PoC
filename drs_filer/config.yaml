@@ -96,6 +96,5 @@ endpoints:
 crypt4gh:
     pubkey_path: "/app/tests/server-pk.key"
     seckey_path: "/app/tests/server-sk.key"
-    storage_host: "minio:9000"
+    storage_host: "http://minio:9000"
     storage_bucket: "drs-crypt4gh"
-    storage_secure: false
