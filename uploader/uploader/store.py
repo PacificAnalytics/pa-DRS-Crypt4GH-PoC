@@ -78,9 +78,9 @@ def _configure_client(endpoint):
 
 def _url_for_object(client, bucket, name):
     url = client.generate_presigned_url(
-        "get_object", ExpiresIn=0, Params={'Bucket': bucket, 'Key': name}
+        "get_object", ExpiresIn=3600, Params={'Bucket': bucket, 'Key': name}
     )
-    return _remove_query_string(url)
+    return url
 
 
 def _remove_query_string(url):

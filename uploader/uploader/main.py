@@ -1,4 +1,6 @@
 from pathlib import Path
+import os
+
 import click
 
 from .crypt4gh_client import get_server_pubkey
@@ -31,7 +33,9 @@ def main(filename, drs_url, storage_url, bucket, desc, encrypt, client_sk):
 
     # Upload byte data to storage server
     store_client = BucketStore(bucket, endpoint=storage_url)
-    resource_url = store_client.upload_file(filename)
+    store_client.upload_file(filename)
+    resource_url = _create_s3_resource_url(
+        bucket, os.path.basename(filename))
 
     # Upload metadata to DRS-filer
     metadata = DRSMetadata.from_file(
@@ -58,6 +62,10 @@ def _load_crypt4gh_keys(client, client_sk):
             " Specify a valid key with the --client-sk flag.")
 
     return server_pubkey, client_seckey
+
+
+def _create_s3_resource_url(bucket, filename):
+    return f"s3://{bucket}/{filename}"
 
 
 def _encrypt_crypt4gh_file(filename, client_seckey, server_pubkey):
