@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+      - name: {{ .Values.name }}-app
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        env:
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.name }}-mongodb-drsstore-drs
+              key: connectionString.standard
+        - name: STORAGE_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.name }}-secrets
+              key: STORAGE_HOST
+        - name: STORAGE_BUCKET
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.name }}-secrets
+              key: STORAGE_BUCKET
+        - name: STORAGE_SECURE
+          value: "true"
+        - name: ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.name }}-secrets
+              key: ACCESS_KEY
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.name }}-secrets
+              key: SECRET_KEY
+        - name: PUB_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.name }}-secrets
+              key: PUB_KEY
+        - name: SEC_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.name }}-secrets
+              key: SEC_KEY
+        ports:
+        -  containerPort: {{ .Values.service.port }}
+      imagePullSecrets:
+      - name: dockerhub

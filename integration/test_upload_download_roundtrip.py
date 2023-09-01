@@ -64,8 +64,8 @@ def test_upload_download_roundtrip():
 
     # Upload file
     cmd = """drs-uploader --drs-url http://minio:8080 \
-          --storage-url localhost:9000 \
-          --bucket drs-crypt4gh --insecure file.txt"""
+          --storage-url http://localhost:9000 \
+          --bucket drs-crypt4gh file.txt"""
     id_ = _run_command(cmd).strip()[1:-1]
     _rm("file.txt")
 

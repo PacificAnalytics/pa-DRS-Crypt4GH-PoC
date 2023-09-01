@@ -1,0 +1,15 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.name }}-issuer
+spec:
+  acme:
+    email: admin@pacificanalytics.co
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-key
+    solvers:
+    - http01:
+        ingress:
+          ingressClassName: nginx

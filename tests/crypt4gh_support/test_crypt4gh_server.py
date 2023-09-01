@@ -9,7 +9,6 @@ from drs_filer.crypt4gh_support.server import (
     reencrypt_access_url
 )
 
-
 from uploader.tests.testing_utils import datapath
 
 
@@ -52,9 +51,16 @@ def test_upload_file():
 
 
 def _patch_env():
+    # Set up environment variables for running with Crypt4GH support.
+    with open(datapath("server-sk.key"), "rt", encoding="utf-8") as fp:
+        sec_key = fp.read()
+    with open(datapath("server-pk.key"), "rt", encoding="utf-8") as fp:
+        pub_key = fp.read()
     return patch.dict(
         os.environ, {"ACCESS_KEY": "accesskey",
-                     "SECRET_KEY": "secretkey"})
+                     "SECRET_KEY": "secretkey",
+                     "SEC_KEY": sec_key,
+                     "PUB_KEY": pub_key})
 
 
 def _patch_helper(funcname):
@@ -74,9 +80,7 @@ def test_reencrypt_access_url(
     }
     client_pubkey = b"pubkey"
     crypt4gh_conf = Crypt4GHConfig(
-        pubkey_path=str(datapath("server-pk.key")),
-        seckey_path=str(datapath("server-sk.key")),
-        storage_host="my-object-store.com",
+        storage_host="http://my-object-store.com",
         storage_bucket="bucket",
     )
 

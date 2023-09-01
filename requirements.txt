@@ -1,4 +1,4 @@
 crypt4gh
-foca==0.12.0
 gunicorn==20.0.4
 setuptools==65.5.1
+foca @ git+https://github.com/elixir-cloud-aai/foca@52a8c7421dc1508e0c3f9b31ba51cdf0871ae3fb

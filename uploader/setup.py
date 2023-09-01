@@ -18,13 +18,14 @@ setup(
     ],
     packages=find_packages(),
     install_requires=[
+        "boto3",
         "crypt4gh",
-        "minio",
         "requests",
     ],
     entry_points={
         'console_scripts': [
-            'drs-uploader=uploader.main:main'
+            'drs-uploader=uploader.main:main',
+            'drs-client=uploader.client:cli',
         ],
     }
 )
