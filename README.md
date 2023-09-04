@@ -13,6 +13,15 @@ API specification.
 
 ## Description
 
+## Building
+
+To build locally and push to docker hub, complete the following steps (todo automate this):
+
+```bash
+docker login
+docker build . -t pacificanalytics/pa-drs-crypt4gh-poc:x.x.x
+docker push pacificanalytics/pa-drs-crypt4gh-poc:x.x.x
+```
 
 ## Deployment
 
