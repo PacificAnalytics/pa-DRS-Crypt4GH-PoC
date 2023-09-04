@@ -95,6 +95,16 @@ export SECRET_KEY=secret
 
 docker-compose up --build
 ```
+
+## Troubleshooting
+
+Logs are sent to elasticsearch via fluentd or failing that you can access the logs directly using kubectl by completing the following steps:
+
+1. Install awscli and ensure you have it authed with `aws configure`
+2. Install kubectl and run the aws command the configures your kubectl to work with eks `aws eks update-kubeconfig --region ap-southeast-2 --name staging-pa-drs-kubernetes`
+3. View the current pods running in the cluster `kubectl get pods`
+4. View the logs for the pod you are interested, in our case it would be `kubectl logs -f pa-drs-crypt4gh-poc-684d56f666-c6z9c` (-f being follow which is similar to tail).
+
 ## Local development
 
 The source code repository is mounted as a volume inside the Docker container for the server. That means that you can edit the code in this repo, and the server will automatically restart when any changes are detected. There is no need to rebuild or even restart the Docker container.
