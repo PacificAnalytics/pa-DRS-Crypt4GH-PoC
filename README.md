@@ -96,7 +96,7 @@ YzRnaC12MQAEbm9uZQAEbm9uZQAg5eYgf1QUl1cFyquP6OgMz2faF2uSc4s8OXf0L4MLRQM=
 export PUB_KEY="-----BEGIN CRYPT4GH PUBLIC KEY-----
 dq/9iq2WMYpYQqnxVpfd0pwRp2PToAccVWldr+kynCI=
 -----END CRYPT4GH PUBLIC KEY-----"
-export STORAGE_HOST=s3.au-southeast-1.amazonaws.com
+export STORAGE_HOST=s3.ap-southeast-2.amazonaws.com
 export STORAGE_BUCKET=mybucket
 export STORAGE_SECURE=true
 export ACCESS_KEY=key
