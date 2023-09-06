@@ -74,7 +74,7 @@ kubectl create secret generic pa-drs-crypt4gh-poc-secrets \
   --from-literal=ACCESS_KEY=access-key \
   --from-literal=SECRET_KEY=secret-key \
   --from-literal=STORAGE_BUCKET=staging-pa-drs-crypt4gh-poc \
-  --from-literal=STORAGE_HOST=s3.au-southeast-1.amazonaws.com \
+  --from-literal=STORAGE_HOST=s3.ap-southeast-2.amazonaws.com \
   --from-file=PUB_KEY=key.pub \
   --from-file=SEC_KEY=key
 ```
