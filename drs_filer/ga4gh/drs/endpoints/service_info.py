@@ -9,7 +9,7 @@ from drs_filer.errors.exceptions import (
     NotFound,
     ValidationError,
 )
-from uploader.crypt4gh_wrapper import get_pubkey_b64
+from drs_filer.crypt4gh_support.crypt4gh_wrapper import get_pubkey_b64
 
 logger = logging.getLogger(__name__)
 

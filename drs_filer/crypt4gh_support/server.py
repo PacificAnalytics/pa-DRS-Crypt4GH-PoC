@@ -4,8 +4,7 @@ import logging
 import os
 from urllib.parse import urlparse
 
-from uploader.crypt4gh_wrapper import get_seckey, reencrypt
-
+from .crypt4gh_wrapper import get_seckey, reencrypt
 from .store import BucketStore
 from .utils import create_unique_filename, temp_folder
 
