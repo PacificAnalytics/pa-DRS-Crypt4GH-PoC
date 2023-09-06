@@ -13,6 +13,15 @@ API specification.
 
 ## Description
 
+## Building
+
+To build locally and push to docker hub, complete the following steps (todo automate this):
+
+```bash
+docker login
+docker build . -t pacificanalytics/pa-drs-crypt4gh-poc:x.x.x
+docker push pacificanalytics/pa-drs-crypt4gh-poc:x.x.x
+```
 
 ## Deployment
 
@@ -28,46 +37,82 @@ pip install -e . -v
 ```bash
 crypt4gh-keygen --sk server-sk.key --pk server-pk.key
 ```
+### Via Docker
+
+1. Build the container 
+```bash
+docker build . -t crypt
+```
+
+2. Run the container
+```bash
+docker run \
+  -e MONGO_DBNAME=drsstore \
+  -e MONGO_HOST=localhost \
+  -e MONGO_USERNAME=admin \
+  -e MONGO_PASSWORD=password123 \
+  -e ACCESS_KEY=123 \
+  -e SECRET_KEY=456 \
+  -e STORAGE_BUCKET=mybucket \
+  -e STORAGE_SECURE=false
+  crypt
+```
 
 ### Via Kubernetes
 
+To deploy into an existing kubernetes cluster, the cluster will require some dependencies to already be installed such as the nginx ingress, cert-manager and mongodb community operator.
+
+1. Ensure docker registry secret exists (you can create the token in via dockerhub):
+```bash
+kubectl create secret docker-registry dockerhub --docker-username=%username% --docker-password=%token%
+```
+
+2. Ensure the mongodb pass exists (replace with real values)
+```bash
+kubectl create secret generic pa-drs-crypt4gh-poc-secrets \
+  --from-literal=MONGOPASS=password123 \
+  --from-literal=ACCESS_KEY=access-key \
+  --from-literal=SECRET_KEY=secret-key \
+  --from-literal=STORAGE_BUCKET=staging-pa-drs-crypt4gh-poc \
+  --from-literal=STORAGE_HOST=s3.ap-southeast-2.amazonaws.com \
+  --from-file=PUB_KEY=key.pub \
+  --from-file=SEC_KEY=key
+```
+
+3. Install this helm chart:
+```bash
+helm upgrade -i crypt4gh-poc deployment
+```
+
 ### Via docker-compose
 
-Prerequisites: you should have [Docker](https://www.docker.com/) installed, as well as the [Minio client](https://min.io/docs/minio/linux/reference/minio-mc.html).
+1. Run the following (edit to taste):
 
-(1) Before bringing up the service for the first time, create a data directory for
-MongoDB to store its configuration and local data:
 ```bash
-mkdir -p ../data/drs/db/
+export MONGO_URI="mongodb://admin:password@db:27017/drsStore?authSource=admin"
+export SEC_KEY="-----BEGIN CRYPT4GH PRIVATE KEY-----
+YzRnaC12MQAEbm9uZQAEbm9uZQAg5eYgf1QUl1cFyquP6OgMz2faF2uSc4s8OXf0L4MLRQM=
+-----END CRYPT4GH PRIVATE KEY-----"
+export PUB_KEY="-----BEGIN CRYPT4GH PUBLIC KEY-----
+dq/9iq2WMYpYQqnxVpfd0pwRp2PToAccVWldr+kynCI=
+-----END CRYPT4GH PUBLIC KEY-----"
+export STORAGE_HOST=https://s3.ap-southeast-2.amazonaws.com
+export STORAGE_BUCKET=staging-pa-drs-crypt4gh-poc
+export STORAGE_SECURE=true
+export ACCESS_KEY=key
+export SECRET_KEY=secret
+
+docker-compose up --build
 ```
 
-(2) Create a file `.env` in the root of the repository containing the username and password for the Minio root account and for a Minio service account. An example such file is given below:
-```bash
-MINIO_ROOT_USER=miniorootuser
-MINIO_ROOT_PASSWORD=miniorootpassword
-ACCESS_KEY=miniolocaluser
-SECRET_KEY=miniolocaluserpwd123
-```
+## Troubleshooting
 
-(3) Bring up the service by running, from the root of the repository,
-```bash
-docker compose up
-```
+Logs are sent to elasticsearch via fluentd or failing that you can access the logs directly using kubectl by completing the following steps:
 
-(4) Provision Minio by setting up a bucket to hold encrypted files and a user account that can be used to upload to it:
-```bash
-./configure-minio.sh
-```
-
-(5) Add an entry to `/etc/hosts` so that the Minio service can be accessed using the `minio` hostname. As root, open the file `/etc/hosts`, and add the following line at the bottom:
-```
-127.0.0.1    minio
-```
-
-The server runs on `localhost:8080` by default. The OpenAPI interface can be
-accessed at
-[http://localhost:8080/ga4gh/drs/v1/ui/](http://localhost:8080/ga4gh/drs/v1/ui/). The Minio dashboad can be found at [http://localhost:9000](http://localhost:9000) and can be accessed using the root user account configured in step (2). After step (5) has been completed, the Minio service can also be accessed at [http://minio:9000](http://minio:9000).
-
+1. Install awscli and ensure you have it authed with `aws configure`
+2. Install kubectl and run the aws command the configures your kubectl to work with eks `aws eks update-kubeconfig --region ap-southeast-2 --name staging-pa-drs-kubernetes`
+3. View the current pods running in the cluster `kubectl get pods`
+4. View the logs for the pod you are interested, in our case it would be `kubectl logs -f pa-drs-crypt4gh-poc-684d56f666-c6z9c` (-f being follow which is similar to tail).
 
 ## Local development
 
@@ -91,7 +136,7 @@ Currently the following scenarios are tested:
 
 1. Querying the service-info endpoint and comparing the output with what is expected.
 
-To run the integration test suite, bring up the server as described above, and then run (from within the development environment):
+To run the integration test suite, bring up the server as described above, and then run (from within the development environment, and with the same environment variables set as were used to bring up the server):
 ```bash
 pytest integration
 ```
@@ -102,9 +147,7 @@ The integration test suite is automatically run under GitHub actions as well, fo
 
 The file `config.yaml` in the `drs_filer` can be used to set various configuration options for the server. The Crypt4GH-related options and some others can also be passed in as environment variables. Currently the following options are supported:
 
-- `PUBKEY_PATH`: The path to the public key used by the server. This must be a file path relative to the container.
-- `SECKEY_PATH`: The path to the public key used by the server. This must be a file path relative to the container.
-- `STORAGE_HOST`: The FQDN of the storage host (e.g. `s3.eu-west-1.amazonaws.com` for AWS or `localhost:9000` for Minio).
+- `STORAGE_HOST`: The FQDN of the storage host (e.g. `https://s3.eu-west-1.amazonaws.com` for AWS or `http://localhost:9000` for Minio).
 - `STORAGE_BUCKET`: The name of the bucket.
 - `STORAGE_SECURE`: Whether or not to check the TLS certificate of the storage host.
 

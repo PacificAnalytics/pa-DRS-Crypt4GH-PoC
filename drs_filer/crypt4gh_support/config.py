@@ -8,9 +8,6 @@ class Crypt4GHConfig(BaseSettings):
     as environment variables. The latter take precedence.
 
     """
-
-    pubkey_path: str
-    seckey_path: str
     storage_host: str
     storage_bucket: str
 
