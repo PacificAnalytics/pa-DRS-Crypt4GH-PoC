@@ -96,8 +96,8 @@ YzRnaC12MQAEbm9uZQAEbm9uZQAg5eYgf1QUl1cFyquP6OgMz2faF2uSc4s8OXf0L4MLRQM=
 export PUB_KEY="-----BEGIN CRYPT4GH PUBLIC KEY-----
 dq/9iq2WMYpYQqnxVpfd0pwRp2PToAccVWldr+kynCI=
 -----END CRYPT4GH PUBLIC KEY-----"
-export STORAGE_HOST=s3.ap-southeast-2.amazonaws.com
-export STORAGE_BUCKET=mybucket
+export STORAGE_HOST=https://s3.ap-southeast-2.amazonaws.com
+export STORAGE_BUCKET=staging-pa-drs-crypt4gh-poc
 export STORAGE_SECURE=true
 export ACCESS_KEY=key
 export SECRET_KEY=secret
@@ -136,7 +136,7 @@ Currently the following scenarios are tested:
 
 1. Querying the service-info endpoint and comparing the output with what is expected.
 
-To run the integration test suite, bring up the server as described above, and then run (from within the development environment):
+To run the integration test suite, bring up the server as described above, and then run (from within the development environment, and with the same environment variables set as were used to bring up the server):
 ```bash
 pytest integration
 ```
@@ -147,9 +147,7 @@ The integration test suite is automatically run under GitHub actions as well, fo
 
 The file `config.yaml` in the `drs_filer` can be used to set various configuration options for the server. The Crypt4GH-related options and some others can also be passed in as environment variables. Currently the following options are supported:
 
-- `PUBKEY_PATH`: The path to the public key used by the server. This must be a file path relative to the container.
-- `SECKEY_PATH`: The path to the public key used by the server. This must be a file path relative to the container.
-- `STORAGE_HOST`: The FQDN of the storage host (e.g. `s3.eu-west-1.amazonaws.com` for AWS or `localhost:9000` for Minio).
+- `STORAGE_HOST`: The FQDN of the storage host (e.g. `https://s3.eu-west-1.amazonaws.com` for AWS or `http://localhost:9000` for Minio).
 - `STORAGE_BUCKET`: The name of the bucket.
 - `STORAGE_SECURE`: Whether or not to check the TLS certificate of the storage host.
 

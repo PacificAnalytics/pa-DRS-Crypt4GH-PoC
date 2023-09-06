@@ -13,7 +13,7 @@ def expected_response():
         "contactUrl": "contact/abc",
         "createdAt": "2020-01-01",
         "crypt4gh": {
-            "pubkey": "AmEsb2n0m5mc6aadwpK4sT6zNapqgH+nnysNtpKa2Ag="
+            "pubkey": "dq/9iq2WMYpYQqnxVpfd0pwRp2PToAccVWldr+kynCI="
         },
         "description": "Description of service.",
         "documentationUrl": "docs/abc",
