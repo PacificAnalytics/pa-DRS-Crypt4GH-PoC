@@ -1,5 +1,3 @@
-import os
-
 import mongomock
 import pytest
 
@@ -30,8 +28,6 @@ from drs_filer.ga4gh.drs.server import (
     PutObject,
 )
 from drs_filer.crypt4gh_support.config import Crypt4GHConfig
-
-from uploader.tests.testing_utils import datapath
 
 
 MOCK_ID_NA = "unavailable"
@@ -487,16 +483,8 @@ def test_getServiceInfo():
         assert res == SERVICE_INFO_CONFIG
 
 
-def _patch_env():
-    with open(datapath("server-pk.key"), "rt", encoding="utf-8") as fp:
-        pub_key = fp.read()
-    return patch.dict(
-        os.environ, {"PUB_KEY": pub_key})
-
-
 # GET /service-info
-@_patch_env()
-def test_getServiceInfo_crypt4gh():
+def test_getServiceInfo_crypt4gh(patch_env):
     """Test for getting service info with crypt4gh keydata."""
     app = Flask(__name__)
     app.config.foca = Config(

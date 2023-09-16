@@ -1,15 +1,14 @@
-import os
 from pathlib import Path
-from unittest.mock import Mock, patch, ANY
+from unittest.mock import Mock, ANY
 
+import pytest
+
+from drs_filer.crypt4gh_support import server
 from drs_filer.crypt4gh_support.config import Crypt4GHConfig
-from drs_filer.crypt4gh_support.utils import temp_folder
 from drs_filer.crypt4gh_support.server import (
     _parse_object_url, _download_to_file, _reencrypt_file, _upload_file,
     reencrypt_access_url
 )
-
-from uploader.tests.testing_utils import datapath
 
 
 def test_download_to_file():
@@ -26,18 +25,26 @@ def test_parse_object_url():
     assert _parse_object_url(url) == "object.id"
 
 
-def test_reencrypt_file():
+@pytest.fixture
+def patch_reencrypt(monkeypatch):
+    new = Mock()
+    monkeypatch.setattr(server, "reencrypt", new)
+    yield new
+
+
+def test_reencrypt_file(patch_reencrypt, tmp_path):
+
+    # GIVEN
     server_seckey = b"seckey"
     client_pubkey = b"pubkey"
 
-    with temp_folder() as temp_d, \
-         patch("drs_filer.crypt4gh_support.server.reencrypt") as patch_reencrypt:  # noqa
+    fname = tmp_path / "file.txt"
+    fname.touch()
 
-        fname = temp_d / "file.txt"
-        fname.touch()
+    # WHEN
+    fname_enc = _reencrypt_file(fname, server_seckey, client_pubkey)
 
-        fname_enc = _reencrypt_file(fname, server_seckey, client_pubkey)
-
+    # THEN
     assert fname_enc.parent == fname.parent
     assert fname_enc != fname
     patch_reencrypt.assert_called_once_with(
@@ -50,29 +57,33 @@ def test_upload_file():
     client.upload_file.assert_called_once_with("foo.txt")
 
 
-def _patch_env():
-    # Set up environment variables for running with Crypt4GH support.
-    with open(datapath("server-sk.key"), "rt", encoding="utf-8") as fp:
-        sec_key = fp.read()
-    with open(datapath("server-pk.key"), "rt", encoding="utf-8") as fp:
-        pub_key = fp.read()
-    return patch.dict(
-        os.environ, {"ACCESS_KEY": "accesskey",
-                     "SECRET_KEY": "secretkey",
-                     "SEC_KEY": sec_key,
-                     "PUB_KEY": pub_key})
+@pytest.fixture
+def patch_upload(monkeypatch):
+    yield _patch_helper(
+        monkeypatch, "_upload_file",
+        retval="http://my-object-store.com/bucket/new.bin")
 
 
-def _patch_helper(funcname):
-    return patch(f"drs_filer.crypt4gh_support.server.{funcname}")
+@pytest.fixture
+def patch_download(monkeypatch):
+    yield _patch_helper(
+        monkeypatch, "_download_to_file", retval="/a/b/c/orig.txt.enc")
 
 
-@_patch_env()
-@_patch_helper("_upload_file")
-@_patch_helper("_reencrypt_file")
-@_patch_helper("_download_to_file")
+@pytest.fixture
+def patch_reencrypt_file(monkeypatch):
+    yield _patch_helper(
+        monkeypatch, "_reencrypt_file", retval="/a/b/c/orig.txt.reenc")
+
+
+def _patch_helper(monkeypatch, funcname, retval):
+    new = Mock(return_value=retval)
+    monkeypatch.setattr(server, funcname, new)
+    return new
+
+
 def test_reencrypt_access_url(
-        patch_download, patch_reencrypt, patch_upload):
+        patch_env, patch_upload, patch_download, patch_reencrypt_file):
 
     # GIVEN
     access_url = {
@@ -83,11 +94,6 @@ def test_reencrypt_access_url(
         storage_host="http://my-object-store.com",
         storage_bucket="bucket",
     )
-
-    # Configure patchers
-    patch_download.return_value = "/a/b/c/orig.txt.enc"
-    patch_reencrypt.return_value = "/a/b/c/orig.txt.reenc"
-    patch_upload.return_value = "http://my-object-store.com/bucket/new.bin"
 
     # WHEN
     new_access_url = reencrypt_access_url(
@@ -105,5 +111,6 @@ def test_reencrypt_access_url(
 
     # THEN -- assert helpers are properly called
     patch_download.assert_called_once_with(ANY, "orig.txt", ANY)
-    patch_reencrypt.assert_called_once_with("/a/b/c/orig.txt.enc", ANY, ANY)
+    patch_reencrypt_file.assert_called_once_with(
+        "/a/b/c/orig.txt.enc", ANY, ANY)
     patch_upload.assert_called_once_with(ANY, "/a/b/c/orig.txt.reenc")
