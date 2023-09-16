@@ -1,0 +1,3 @@
+boto3
+crypt4gh
+crypt4gh_common @ git+https://github.com/PacificAnalytics/pa-DRS-Crypt4GH-Client#subdirectory=crypt4gh-common

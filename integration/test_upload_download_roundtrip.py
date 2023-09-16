@@ -5,12 +5,6 @@ import subprocess
 import tempfile
 
 
-# Grab storage configuration variables from the environment. Note: ACCESS_KEY
-# and SECRET_KEY must also be set.
-STORAGE_HOST = os.environ["STORAGE_HOST"]
-STORAGE_BUCKET = os.environ["STORAGE_BUCKET"]
-
-
 def _in_temp_dir(fn):
     """Run tests in a temporary directory.
     """
@@ -34,7 +28,7 @@ def _run_command(cmd):
     """Run command and return stdout.
     """
     result = subprocess.run(
-        cmd, check=True, shell=True, capture_output=True, encoding="utf-8")
+        cmd, check=True, capture_output=True, encoding="utf-8")
     return result.stdout
 
 
@@ -57,15 +51,25 @@ def test_upload_download_roundtrip():
 
     _touch("file.txt", "test file")
 
+    # Write config file
+    cmd = ["drs-client", "configure",
+           "--access-key", os.environ['ACCESS_KEY'],
+           "--secret-key", os.environ['SECRET_KEY'],
+           "--drs-url", os.environ['DRS_HOST'],
+           "--storage-url", os.environ['STORAGE_HOST'],
+           "--bucket", os.environ['STORAGE_BUCKET']]
+    _run_command(cmd)
+
     # Upload file
-    cmd = f"""drs-uploader --drs-url http://localhost:8080 \
-          --storage-url {STORAGE_HOST} \
-          --bucket {STORAGE_BUCKET} file.txt"""
-    id_ = _run_command(cmd).strip()[1:-1]
+    cmd = ["drs-client", "upload", "--no-encrypt", "file.txt"]
+    id_ = _run_command(cmd).strip()
     _rm("file.txt")
 
-    # Download file again
-    cmd = f"drs get --suppress-ssl-verify -d http://localhost:8080 {id_}"
+    # Download file again (note: this uses the GA4GH download client as our
+    # drs-client doesn't support unencrypted downloads out of the box (yet)
+    cmd = ["drs", "get",
+           "--suppress-ssl-verify",
+           "-d", os.environ['DRS_HOST'], id_]
     _run_command(cmd)
 
     # Check that contents match

@@ -4,9 +4,9 @@ import logging
 import os
 from urllib.parse import urlparse
 
-from uploader.store import BucketStore
-from uploader.crypt4gh_wrapper import reencrypt
+from crypt4gh_common import reencrypt
 
+from .store import BucketStore
 from .utils import create_unique_filename, temp_folder, get_seckey_from_env
 
 logger = logging.getLogger(__name__)

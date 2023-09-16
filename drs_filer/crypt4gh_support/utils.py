@@ -1,5 +1,6 @@
 """Supporting code for crypt4gh module."""
 
+from base64 import b64encode
 from contextlib import contextmanager
 import os
 from pathlib import Path
@@ -7,7 +8,7 @@ import tempfile
 import shutil
 import uuid
 
-from uploader.crypt4gh_wrapper import get_pubkey_b64, get_seckey
+from crypt4gh_common import get_pubkey, get_seckey
 
 
 @contextmanager
@@ -45,9 +46,10 @@ def get_pubkey_b64_from_env():
         filepath = d / "server.sk"
         with open(filepath, "wt", encoding="utf-8") as fp:
             fp.write(pubkey)
-        parsed_key = get_pubkey_b64(filepath)
+        pubkey_data = get_pubkey(filepath)
+        pubkey_b64 = b64encode(pubkey_data).decode("ascii")
 
-    return parsed_key
+    return pubkey_b64
 
 
 def get_seckey_from_env():

@@ -7,20 +7,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Create env file
-      run: cp integration/env.txt .env
     - name: Build and bring up the stack
       run: docker compose up -d
-    - name: Install the Minio client
-      run: |
-        curl https://dl.min.io/client/mc/release/linux-amd64/mc --create-dirs -o $HOME/minio-binaries/mc
-        chmod +x $HOME/minio-binaries/mc
-        echo "PATH=${PATH}:${HOME}/minio-binaries/" >> "$GITHUB_ENV"
-    - name: Configure Minio
-      run: ./configure-minio.sh
-    - name: Setup minio host mapping
-      run: |
-        sudo echo "127.0.0.1 minio" | sudo tee -a /etc/hosts
+      env:
+        ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        MONGO_URI: mongodb://admin:password@db:27017/drsStore?authSource=admin
+        STORAGE_HOST: ${{ vars.STORAGE_HOST }}
+        STORAGE_BUCKET: ${{ vars.STORAGE_BUCKET }}
+        SEC_KEY: |
+          -----BEGIN CRYPT4GH PRIVATE KEY-----
+          YzRnaC12MQAEbm9uZQAEbm9uZQAg5eYgf1QUl1cFyquP6OgMz2faF2uSc4s8OXf0L4MLRQM=
+          -----END CRYPT4GH PRIVATE KEY-----
+        PUB_KEY: |
+          -----BEGIN CRYPT4GH PUBLIC KEY-----
+          dq/9iq2WMYpYQqnxVpfd0pwRp2PToAccVWldr+kynCI=
+          -----END CRYPT4GH PUBLIC KEY-----
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -31,13 +33,13 @@ jobs:
       run: |
         python -m pip install -r requirements.txt
         python -m pip install -r requirements-test.txt
-    - name: Install DRS uploader
-      run: |
-        python -m pip install -e uploader/ -v
-    - name: Install DRS client
-      run: |
-        pip install git+https://jvkersch:${INTEGRATION_TEST_TOKEN}@github.com/PacificAnalytics/pa-DRS-Crypt4GH-Downloader.git
-      env:
-        INTEGRATION_TEST_TOKEN: ${{ secrets.INTEGRATION_TEST_TOKEN }}
+        python -m pip install git+https://github.com/PacificAnalytics/pa-DRS-Crypt4GH-Client#subdirectory=crypt4gh-common
+        python -m pip install git+https://github.com/PacificAnalytics/pa-DRS-Crypt4GH-Client#subdirectory=drs-client  
     - name: Test
       run: python -m pytest integration/
+      env:
+        ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        DRS_HOST: ${{ vars.DRS_HOST }}
+        STORAGE_HOST: ${{ vars.STORAGE_HOST }}
+        STORAGE_BUCKET: ${{ vars.STORAGE_BUCKET }}
