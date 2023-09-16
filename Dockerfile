@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 RUN pip install -e . -v \
-  && pip install -e uploader -v \
+  && pip install -r requirements-crypt4gh.txt \
   && chmod g+w ./drs_filer/api/ \
   && pip install yq
 
